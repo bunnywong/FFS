@@ -5661,6 +5661,8 @@ if (!class_exists('Uap_Db')){
 		}
 
 		public function envato_check_license(){
+      // @CUSTOM SCRIPT :)
+      return TRUE;
 			/*
 			 * @param none
 			 * @return bool
