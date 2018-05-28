@@ -164,7 +164,8 @@ class Referral_Main{
 					$theAmount = $args['product_price'];
 				}
 
-				$this->mlm_do_save_referral_unverified($args['affiliate_id'], $referral_id, 1, $limit, $theAmount, $first_child_username, $referral_id, $args['product_price']);
+        // @CUSTOM: make `1` to `2`. so default grandparent move to parent level
+				$this->mlm_do_save_referral_unverified($args['affiliate_id'], $referral_id, 2, $limit, $theAmount, $first_child_username, $referral_id, $args['product_price']);
 			}
 		}
 		return TRUE;
