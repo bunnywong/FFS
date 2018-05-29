@@ -7,21 +7,21 @@
 	<p><?php echo do_shortcode($data['message']);?></p>
 <?php endif;?>
 
-	<div class="uap-account-alert-warning">
+	<div class="uap-account-alert-warning uap-account-affiliatelinks-tab1">
 		<?php if (empty($data['print_username'])): ?>
 			<label class="uap-ap-label"><?php _e("Your Affiliate ID is:", 'uap');?></label> <strong class=" uap-special-label"><?php echo $data['affiliate_id'];?></strong>
 		<?php else:?>
 			<label class="uap-ap-label"><?php _e("Your Affiliate Name is:", 'uap');?></label> <strong class=" uap-special-label"><?php echo $data['print_username'];?></strong>		
 		<?php endif;?>
 	</div>
-	<div class="uap-ap-field">
+	<div class="uap-ap-field uap-account-affiliatelinks-tab2">
 		<label class="uap-ap-label"><?php _e("Your referral URL is:", 'uap');?> </label> 
 	<div class="uap-account-url">
 		<a href="<?php echo $data['home_url'];?>" target="_blank"><?php echo $data['home_url'];?></a>
 	</div>
 	
 	<?php if (!empty($data['qr_home'])):?>
-		<div class="uap-qr-code-wrapper">
+		<div class="uap-qr-code-wrapper uap-account-affiliatelinks-tab3">
 			<img src="<?php echo $data['qr_home'];?>" />
 			<a href="<?php echo $data['qr_home'];?>" class="uap-qr-code-download" download="<?php echo basename($data['qr_home']);?>"><?php _e('Download', 'uap');?></a>
 		</div>
@@ -34,7 +34,7 @@
 		</div>	
 		
 		<?php if (!empty($data['qr_custom_slug'])):?>
-			<div class="uap-qr-code-wrapper">
+			<div class="uap-qr-code-wrapper uap-account-affiliatelinks-tab4">
 				<img src="<?php echo $data['qr_custom_slug'];?>" />
 				<a href="<?php echo $data['qr_custom_slug'];?>" class="uap-qr-code-download" download="<?php echo basename($data['qr_custom_slug']);?>"><?php _e('Download', 'uap');?></a>
 			</div>
@@ -44,6 +44,7 @@
 		
 	</div>
 	<div style="margin:10px 0 20px 0;"><?php echo $data['social_links'];?></div>
+  <div class="uap-account-link-generator uap-account-affiliatelinks-tab5">  
 	<h4><?php _e("Link Generator", 'uap');?></h4>
 	<p><?php _e("If you'd prefer to append your own affiliate links with an alternate incoming URL, use the following structure. To build your link, take the following URL and append it with the Alternate Incoming URL you want to use.", 'uap');?></p>
 	<?php if (!empty($data['campaigns'])) : ?>
@@ -91,5 +92,6 @@
 	<div class="uap-ap-field">
 		<button type="button" onClick="ia_generate_link(<?php echo $data['affiliate_id'];?>);"><?php _e("Generate Link", 'uap');?></button>
 	</div>
+   </div> 
 </div>
 

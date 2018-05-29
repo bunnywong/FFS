@@ -110,18 +110,19 @@ class Referral_Main{
 		 * @return boolean
 		 */
 		global $indeed_db;
-		$keys = array(	
-						'refferal_wp_uid', 
-						'campaign', 
-						'affiliate_id', 
-						'visit_id', 
-						'description', 
-						'source', 
-						'reference', 
-						'reference_details', 
-						'amount', 
-						'currency',
-		);				
+		$keys = array(
+						'refferal_wp_uid',
+						'campaign',
+						'affiliate_id',
+						'visit_id',
+						'description',
+						'source',
+						'reference',
+						'reference_details',
+						'amount',
+            'currency',
+						'product_price',
+		);
 
 		foreach ($keys as $key){
 			if (!isset($args[$key])){
@@ -162,9 +163,9 @@ class Referral_Main{
 				if ($uap_mlm_use_amount_from && $uap_mlm_use_amount_from=='product_price' && isset($args['product_price'])){ 
 					$theAmount = $args['product_price'];
 				}
-				
-				$this->mlm_do_save_referral_unverified($args['affiliate_id'], $referral_id, 1, $limit, $theAmount, $first_child_username, $referral_id);
-			}		
+
+				$this->mlm_do_save_referral_unverified($args['affiliate_id'], $referral_id, 1, $limit, $theAmount, $first_child_username, $referral_id, $args['product_price']);
+			}
 		}
 		return TRUE;
 	}
@@ -200,9 +201,9 @@ class Referral_Main{
 		if ($referral_id){
 			$indeed_db->change_referral_status($referral_id, 0);
 		}
-	}	
-	
-	protected function mlm_do_save_referral_unverified($child_affiliate_id=0, $child_referral_id=0, $count=1, $limit=0, $amount=0, $first_child_username='', $first_child_referrence=''){
+	}
+
+	protected function mlm_do_save_referral_unverified($child_affiliate_id=0, $child_referral_id=0, $count=1, $limit=0, $amount=0, $first_child_username='', $first_child_referrence='', $product_price){
 		/*
 		 * @param int, int, int, int, int, string, string
 		 * @return none
@@ -212,9 +213,15 @@ class Referral_Main{
 			return;
 		}
 		if ($child_affiliate_id && $child_referral_id){
-			global $indeed_db;
-			$parent_id = $indeed_db->mlm_get_parent($child_affiliate_id);
-			$description = 'From MLM';
+      global $indeed_db;
+      if ($count === 1) {
+        // @CUSTOM: condition for stick first render as `ref=theguy` people
+        $parent_id = $child_affiliate_id;
+      } else {
+        $parent_id = $indeed_db->mlm_get_parent($child_affiliate_id);
+      }
+      $description = 'From MLM';
+      if ($parent_id === 0) $parent_id = 1;
 			if (!empty($first_child_username)){
 				$description = 'From ' . $first_child_username;
 			}
@@ -241,9 +248,9 @@ class Referral_Main{
 				$args['payment'] = 0;//unpaid
 				
 				/// SET AMOUNT
-				$args['amount'] = $indeed_db->mlm_get_amount($parent_id, $amount, $count);
-				$args['currency'] = self::$currency;				
-				
+				$args['amount'] = $indeed_db->mlm_get_amount($parent_id, $product_price, $count);
+				$args['currency'] = self::$currency;
+
 				/// save referral
 				$inserted_referral_id = $indeed_db->save_referral($args);	
 				
@@ -252,7 +259,8 @@ class Referral_Main{
 				
 				/// search for parent
 				$count++;
-				$this->mlm_do_save_referral_unverified($parent_id, $inserted_referral_id, $count, $limit, $amount, $first_child_username, $first_child_referrence);			
+        // @CUSTOM: added $product_price
+				$this->mlm_do_save_referral_unverified($parent_id, $inserted_referral_id, $count, $limit, $amount, $first_child_username, $first_child_referrence, $product_price);
 			}
 		}
 	}

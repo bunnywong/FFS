@@ -4,43 +4,106 @@
 <div class="uap-pass-form-wrap <?php echo $meta_arr['uap_login_template'];?>">
 	<form action="" method="post" >
 		<input name="uapaction" type="hidden" value="reset_pass">
-	
+
 	<?php switch ($meta_arr['uap_login_template']){
-			 case 'uap-login-template-3': ?>
+		 case 'uap-login-template-2': ?>
+			<div class="uap-form-line-fr">
+					<input type="text" value="" name="email_or_userlogin" placeholder="<?php _e('Username or E-mail');?>" />
+			</div>
+			<div class="uap-form-line-fr uap-form-submit"><input type="submit" value="<?php _e('Get New Password', 'ulp');?>" name="Submit"></div>
+	<?php break;?>
+
+	<?php case 'uap-login-template-3': ?>
+		<div >
 			<div class="impu-form-line-fr">
 				<input type="text" value="" name="email_or_userlogin" placeholder="<?php _e('Username or E-mail');?>" />
 			</div>
-			<div class="impu-form-submit">
-				<input type="submit" value="<?php _e('Get New Password', 'uap');?>" name="Submit" class="button button-primary button-large" />
+			<div class="uap-form-line-fr uap-form-submit">
+				<input type="submit" value="<?php _e('Get New Password', 'uap');?>" style="width: 80%;" name="Submit" class="button button-primary button-large" />
 			</div>
-		<?php break;
-		case 'uap-login-template-4': ?>
-		<div class="impu-form-line-fr">
-			<i class="fa-uap fa-username-uap"></i><input type="text" value="" name="email_or_userlogin" placeholder="'.__('Username or E-mail').'" />
-		</div>
-		<div class="impu-form-submit">
-			<input type="submit" value="<?php _e('Get New Password', 'uap');?>" name="Submit" class="button button-primary button-large" />
+			<div class="uap-clear"></div>
 		</div>
 	<?php break;?>
-						
-	<?php default:?>
-		<div class="impu-form-line-fr">
-			<span class="impu-form-label-fr impu-form-label-username"><?php _e('Username or E-mail', 'uap');?></span>
-			<input type="text" value="" name="email_or_userlogin" />
-		</div>
-		<div class="impu-form-submit">
-			<input type="submit" value="<?php _e('Get New Password', 'uap');?>" name="Submit" class="button button-primary button-large" />
-		</div>
-	<?php break;?>
+
+		<?php case 'uap-login-template-4': ?>
+			<div class="uap-form-line-fr">
+				<i class="fa-uap fa-username-uap"></i><input type="text" value="" name="email_or_userlogin" placeholder="<?php _e('Username or E-mail', 'uap');?>" />
+			</div>
+			<div class="uap-form-line-fr uap-form-submit">
+				<input type="submit" value="<?php _e('Get New Password', 'uap');?>" style="width: 80%;" name="Submit" class="" />
+			</div>
+		<?php break;?>
+
+		<?php case 'uap-login-template-5': ?>
+			<div class="uap-form-line-fr">
+					<span class="uap-form-label-fr uap-form-label-username"><?php _e('Username or E-mail', 'uap');?></span>
+				  <input type="text" value="" name="email_or_userlogin" style="    padding: 8px 4px 7px 9px;" placeholder="" />
+			</div>
+			<div class="uap-form-line-fr uap-form-submit">
+				<input type="submit" value="<?php _e('Get New Password', 'uap');?>" style="width: 80%;" name="Submit" class="" />
+			</div>
+		<?php break;?>
+
+				<?php case 'uap-login-template-6': ?>
+					<div class="uap-form-line-fr">
+							<span class="uap-form-label-fr uap-form-label-username"><b><?php _e('Username or E-mail', 'uap');?></b></span>
+						  <input type="text" value="" name="email_or_userlogin" style="width: 94%;" placeholder="" />
+					</div>
+					<div class="uap-temp6-row-right">
+							<div class="uap-form-line-fr uap-form-submit">
+								<input type="submit" value="<?php _e('Get New Password', 'uap');?>" style="font-weight: 500;" name="Submit" class="" />
+							</div>
+					</div>
+				<?php break;?>
+
+				<?php case 'uap-login-template-8':?>
+					<div class="uap-form-line-fr">
+						<i class="fa-uap fa-username-uap"></i>
+						<input type="text" value="" name="email_or_userlogin" placeholder="<?php _e('Username or E-mail', 'uap');?>" />
+					</div>
+					<div class="uap-form-line-fr uap-form-submit">
+						<input type="submit" value="<?php _e('Get New Password', 'uap');?>" name="Submit" style="    width: 85%;padding: 15px 30px !important; min-height: 0px;" class="button button-primary button-large" />
+					</div>
+				<?php break;?>
+
+				<?php case 'uap-login-template-9':?>
+					<div class="uap-form-line-fr">
+						<i class="fa-uap fa-username-uap"></i>
+						<input type="text" value="" name="email_or_userlogin" placeholder="<?php _e('Username or E-mail', 'uap');?>" />
+					</div>
+					<div class="uap-form-line-fr uap-form-submit">
+						<input type="submit" value="<?php _e('Get New Password', 'uap');?>" name="Submit" style="width: 85%;padding: 15px 30px !important; min-height: 0px;" class="button button-primary button-large" />
+					</div>
+				<?php break;?>
+
+				<?php case 'uap-login-template-10':?>
+					<div class="uap-form-line-fr">
+						<i class="fa-uap fa-username-uap"></i>
+						<input type="text" value="" name="email_or_userlogin" placeholder="<?php _e('Username or E-mail', 'uap');?>" />
+					</div>
+					<div class="uap-form-line-fr uap-form-submit">
+						<input type="submit" value="<?php _e('Get New Password', 'uap');?>" name="Submit" style="width: 85%;padding: 15px 30px !important; min-height: 0px;" class="button button-primary button-large" />
+					</div>
+				<?php break;?>
+
+				<?php default:?>
+					<div class="uap-form-line-fr">
+						<span class="uap-form-label-fr uap-form-label-username"><?php _e('Username or E-mail', 'uap');?></span>
+						<input type="text" value="" name="email_or_userlogin" />
+					</div>
+					<div class="uap-form-line-fr uap-form-submit">
+						<input type="submit" value="<?php _e('Get New Password', 'uap');?>" name="Submit" class="button button-primary button-large" />
+					</div>
+				<?php break;?>
+
 	<?php }?>
-	
+
 	</form>
-	<?php 
+	<?php
 	if (!empty($data['success_message'])){
 		echo "<div class='uap-reset-pass-success-msg'>" . $data['success_message'] . '</div>';
 	} else if (!empty($data['error_message'])){
 		echo "<div class='uap-wrapp-the-errors'>" . $data['error_message'] . '</div>';
 	}
-	?>		
-</div>		
-	
+	?>
+</div>

@@ -1,10 +1,10 @@
-<?php 
+<?php
 if(!class_exists('Uap_Add_Edit_Affiliate')){
 	class Uap_Add_Edit_Affiliate{
 		private $is_public = true;
 		private $user_id = '';
 		private $type = 'create';//create or edit
-		private $action = '';// form action (url) 		
+		private $action = '';// form action (url)
 		private $user_data = array();
 		private $tos = false;
 		private $captcha = false;
@@ -13,7 +13,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 		private $register_fields = '';
 		private $disabled_submit_form = '';
 		private $register_template = 'uap-register-1';
-		private $display_type = 'display_admin';		
+		private $display_type = 'display_admin';
 		private $required_fields = array();
 		private $current_rank = 0;
 		private $global_css = '';
@@ -34,14 +34,14 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			global $indeed_db;
 			$this->register_metas = array_merge($indeed_db->return_settings_from_wp_option('register', FALSE, FALSE), $indeed_db->return_settings_from_wp_option('register-msg', FALSE, FALSE), $indeed_db->return_settings_from_wp_option('register-custom-fields', FALSE, FALSE));
 			$this->register_template = (empty($args['register_template'])) ? $this->register_metas['uap_register_template'] : $args['register_template'];
-			
+
 			/// INPUT VARIABLES
 			if (!empty($args)){
 				foreach($args as $k=>$v){
 					$this->$k = $v;
 				}
 			}
-			
+
 			if ($this->is_public){
 				if ($this->type=='create'){
 					$this->display_type = 'display_public_reg';
@@ -51,7 +51,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			} else {
 				$this->display_type = 'display_admin';
 			}
-			
+
 			/// SET REGISTER FIELDS
 			$this->register_fields = $indeed_db->register_get_custom_fields();//register fields
 			ksort($this->register_fields);
@@ -61,41 +61,41 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 					unset($this->register_fields[$key]);
 				}
 			}
-			
+
 			/// SET CURRENT RANK
 			$this->current_rank = get_option('uap_register_new_user_rank');
 			if ($this->user_id){
 				$this->current_rank = $indeed_db->get_affiliate_rank(0, $this->user_id);
 			}
 		}
-		
+
 		/////////
 		public function form(){
 			/*
 			 * @param none
 			 * @return string
 			 */
-			
-			/*extra fields that must be transalted:*/				 		
+
+			/*extra fields that must be transalted:*/
 			   __("Confirm Password", 'uap');
 			   __("Last Name", 'uap');
-			   __("First Name", 'uap');			 
+			   __("First Name", 'uap');
 			 /**/
-			   
+
 			$this->userdata();
-			
+
 			$i = 0;
 			$template_with_cols= array('uap-register-6', 'uap-register-11', 'uap-register-12', 'uap-register-13');
 			if (in_array($this->register_template, $template_with_cols)){
 				$return_data['count_register_fields'] = $this->count_register_fields();
 			}
-			
+
 			$this->global_js = '';
 
 			foreach ($this->register_fields as $v){
 				$str = '';
 				if ($v[$this->display_type]>0){
-					$i++;					
+					$i++;
 					switch ($v['name']){
 						case 'tos':
 							if ($this->tos){
@@ -107,7 +107,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 							 			$str .= '<div class="uap-register-notice">' . self::$print_errors['tos'] . '</div>';
 							 		}
 								}
-							}							
+							}
 							break;
 						case 'recaptcha':
 							if ($this->captcha){
@@ -116,18 +116,18 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 							 		$str .= $disp_captcha;
 									if (!empty(self::$print_errors['captcha'])){
 										$str .= '<div class="uap-register-notice">' . self::$print_errors['captcha'] . '</div>';
-									}								
+									}
 								}
 							}
 							break;
 						default:
 							if ($this->is_public) {
-								
+
 								//========== PUBLIC
 								$str .= $this->print_fields($v);
 							} else {
 								//========== ADMIN
-									
+
 								$disabled = '';
 								if ( $this->type=='edit' && $v['name']=='user_login'){
 									$disabled = 'disabled';
@@ -146,7 +146,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 									$str .= uap_correct_text($v['label']);
 								}
 								$str .= '</label>';
-							
+
 								$val = '';
 								if (isset($this->user_data[$v['name']])){
 									$val = $this->user_data[$v['name']];
@@ -154,34 +154,34 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 								if (empty($val) && $v['type']=='plain_text'){ //maybe it's plain text
 									$val = $v['plain_text_value'];
 								}
-									
+
 								$multiple_values = FALSE;
 								if (isset($v['values']) && $v['values']){
 									//is checkbox, select or radio input field, so we have to include multiple+_values into indeed_create_form_elelemt
 									$multiple_values = uap_from_simple_array_to_k_v($v['values']);
 								}
-							
+
 								if (empty($v['sublabel'])){
 									$v['sublabel'] = '';
 								}
-							
+
 								if (empty($v['class'])){
 									$v['class'] = '';
 								}
-									
+
 								$str .= uap_create_form_element(array( 'type' => $v['type'], 'name' => $v['name'], 'value' => $val,
 										'disabled' => $disabled, 'multiple_values' => $multiple_values,
 										'user_id' => $this->user_id, 'sublabel' => $v['sublabel'], 'class' => $v['class'] ));
 								$str .= '</div>';
 							}
 							break;
-					}//end of switch					
+					}//end of switch
 				}
 				$return_data['form_fields'][] = $str;
 			}
-					
-			if ($this->is_public){		
-				/*******************************PUBLIC****************************/				
+
+			if ($this->is_public){
+				/*******************************PUBLIC****************************/
 
 				//ACTIONS
 				if ($this->type=='edit'){
@@ -195,41 +195,41 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				$return_data['form_fields'][] = $this->select_rank();//select ranks
 				global $indeed_db;
 				if ($indeed_db->is_magic_feat_enable('custom_affiliate_slug')){
-					$return_data['form_fields'][] = $this->the_slug();// edit the slug					
+					$return_data['form_fields'][] = $this->the_slug();// edit the slug
 				}
-				
+
 				if ($this->user_id && $this->type=='edit'){//hide user id into the form for edit, only in admin
 					$return_data['hiddens'][] = uap_create_form_element(array('type'=>'hidden', 'name'=>'user_id', 'value' => $this->user_id ));
-				}		
-				$return_data['form_fields'][] = $this->print_overview_post_select();		
+				}
+				$return_data['form_fields'][] = $this->print_overview_post_select();
 			}
-			
+
 			if ($this->type=='create'){
-				$return_data['submit_button']= uap_create_form_element(array('type'=>'submit', 'name'=>'Submit', 'value' => __('Register', 'uap'), 
+				$return_data['submit_button']= uap_create_form_element(array('type'=>'submit', 'name'=>'Submit', 'value' => __('Register', 'uap'),
 						'class' => '', 'id'=>'uap_submit_bttn', 'disabled'=>$this->disabled_submit_form )); /// class button button-primary button-large
 			} else {
 				$return_data['submit_button']= uap_create_form_element(array('type'=>'submit', 'name'=>'Update', 'value' => __('Save Changes', 'uap'),
 						 'class' => 'button button-primary button-large', 'id'=>'uap_submit_bttn', 'disabled'=>$this->disabled_submit_form ));
-			}					
-			
+			}
+
 			if (count($this->exception_fields)>0){
 				$return_data['hiddens'][] = '<input type="hidden" name="uap_exceptionsfields" id="uap_exceptionsfields" value="' . implode(',', $this->exception_fields) . '" />';
 			}
-			
+
 			global $indeed_db;
-			if (!$this->is_public && $indeed_db->is_magic_feat_enable('mlm') && ($this->type=='create' || !$indeed_db->mlm_get_parent($indeed_db->get_affiliate_id_by_wpuid($this->user_id)) ) ){	
-				$return_data['form_fields'][] = uap_create_form_element( 
-																			array(	
-																				'type'=>'uap_affiliate_autocomplete_field', 
+			if (!$this->is_public && $indeed_db->is_magic_feat_enable('mlm') && ($this->type=='create' || !$indeed_db->mlm_get_parent($indeed_db->get_affiliate_id_by_wpuid($this->user_id)) ) ){
+				$return_data['form_fields'][] = uap_create_form_element(
+																			array(
+																				'type'=>'uap_affiliate_autocomplete_field',
 																				'label' => __('Select a Parent for this Affiliate', 'uap'),
 																				'field_style' => 'style="margin-top: 0px;"',
-																				'title' => __('MLM Section', 'uap'), 
+																				'title' => __('MLM Section', 'uap'),
 																				'hidden_name' => 'uap_affiliate_mlm_parent',
 																				'exclude_user_id' => $this->user_id,
 																			)
 				);
 			}
-			
+
 			//wrapp it all in a form
 			if ($this->type=='edit'){
 				$return_data['form_name'] = "uap_edituser";
@@ -240,7 +240,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			}
 
 			$return_data['css'] = $this->global_css;
-			
+
 			//AJAX CHECK FIELDS VALUES (ONLY FOR PUBLIC REGISTER)
 			$return_data['js'] = '';
 			if ($this->is_public && $this->type=='create'){
@@ -250,29 +250,29 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 					if (in_array($req_field['type'], array('text', 'textarea', 'number', 'password', 'date', 'conditional_text'))){
 						$return_data['js'] .= 'jQuery(".uap-form-create-edit [name='.$req_field['name'].']").on("blur", function(){
 							uap_register_check_via_ajax("'.$req_field['name'].'");
-						});';						
+						});';
 					}
-					
+
 					$return_data['js'] .= 'req_fields_arr.push("' . $req_field['name'] . '");
 					';
 				}
-				$return_data['js'] .= 'jQuery(".uap-form-create-edit").live("submit", function() {
+				$return_data['js'] .= 'jQuery(".uap-form-create-edit").on("submit", function() { /// live
 							if (window.must_submit==1){
 								return true;
 							} else {
 								uap_register_check_via_ajax_rec(req_fields_arr);
-								return false;							
+								return false;
 							}
 						});';
 				$return_data['js'] .= '});';
 			}
 			$return_data['js'] .= $this->global_js;
-			
-			//return $str;	
+
+			//return $str;
 			return $return_data;
 		}
-		
-		
+
+
 		/////////
 		public function userdata(){
 			/*
@@ -300,16 +300,16 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				//user wp role
 				if (isset($data->roles[0])){
 					$this->user_data['role'] = $data->roles[0];
-				}				
+				}
 			} else {
 				//empty arr
 					foreach ($user_fields as $user_field){
 						$name = $user_field['name'];
-						$this->user_data[$name] = '';	
-						
+						$this->user_data[$name] = '';
+
 						if ($this->is_public && isset($_REQUEST[$name])){
 							$this->user_data[$name] = $_REQUEST[$name];
-						}					
+						}
 					}
 				$this->user_data['role'] = '';
 			}
@@ -324,8 +324,8 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			$str .= '<div class="uap-form-line-register">';
 			$str .= '<label class="uap-labels-register">WP Role</label>';
 			$str .= uap_create_form_element(
-													array(  'type' => 'select', 
-															'name' => 'role', 
+													array(  'type' => 'select',
+															'name' => 'role',
 															'value' => @$this->user_data['role'],
 															'multiple_values' => uap_get_wp_roles_list(),
 															'class' => '' )
@@ -333,7 +333,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			$str .= '</div>';
 			return $str;
 		}
-		
+
 		////////
 		private function select_rank(){
 			/*
@@ -349,8 +349,8 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				$output .= '<div class="uap-form-line-register">';
 				$output .= '<label class="uap-labels-register">Affiliate Ranks</label>';
 				$output .= uap_create_form_element(
-														array(  'type' => 'select', 
-																'name' => 'rank_id', 
+														array(  'type' => 'select',
+																'name' => 'rank_id',
 																'value' => $this->current_rank,
 																'multiple_values' => $ranks,
 																'class' => '' )
@@ -359,7 +359,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			}
 			return $output;
 		}
-		
+
 		private function the_slug(){
 			/*
 			 * @param none
@@ -372,19 +372,19 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				$output .= '<div class="uap-form-line-register">';
 				$output .= '<label class="uap-labels-register">' . __('Affiliate Slug', 'uap') . '</label>';
 				$output .= uap_create_form_element(
-														array(  'type' => 'text', 
-																'name' => 'uap_affiliate_custom_slug', 
+														array(  'type' => 'text',
+																'name' => 'uap_affiliate_custom_slug',
 																'value' => $value,
 																'class' => '' )
 														);
-				$output .= '</div>';								
+				$output .= '</div>';
 			}
-			return $output;			 
+			return $output;
 		}
 
 		private function edit_ap_check_conditional_logic($field_data=array()){
 			$value = get_user_meta($this->user_id, $field_data['conditional_logic_corresp_field'], TRUE);
-			
+
 			if ($field_data['conditional_logic_cond_type']=='has'){
 				//has value
 				if ($field_data['conditional_logic_corresp_field_value']==$value){
@@ -395,11 +395,11 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				if (strpos($value, $field_data['conditional_logic_corresp_field_value'])!==FALSE){
 					return 1;
 				}
-			}			
+			}
 
 			return 0;
 		}
-		
+
 		private function check_for_conditional_logic($field_arr, $field_id){
 			/*
 			 * @param string, string
@@ -410,7 +410,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			}
 			if (!empty($field_arr['conditional_logic_corresp_field']) && $field_arr['conditional_logic_corresp_field']!=-1){
 				//so this field is correlated with another
-				
+
 				////Js ACTION
 				$key = uap_array_value_exists($this->register_fields, $field_arr['conditional_logic_corresp_field'], 'name');
 				if ($key!==FALSE && !empty($this->register_fields[$key]['type'])){
@@ -419,14 +419,14 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 					if ($this->type=='edit'){
 						if ($show){
 							/// 'yes'
-							$no_on_edit = $this->edit_ap_check_conditional_logic($field_arr);			
+							$no_on_edit = $this->edit_ap_check_conditional_logic($field_arr);
 						} else {
 							/// 'no'
-							$no_on_edit = !$this->edit_ap_check_conditional_logic($field_arr);						
+							$no_on_edit = !$this->edit_ap_check_conditional_logic($field_arr);
 						}
 
-					} 
-					
+					}
+
 					switch ($this->register_fields[$key]['type']){
 						case 'text':
 						case 'textarea':
@@ -439,7 +439,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 								jQuery(".uap-form-create-edit [name='.$field_arr['conditional_logic_corresp_field'].']").on("blur", function(){
 									' . $js_function . '
 								});
-							';							
+							';
 							break;
 						case 'checkbox':
 							$js_function = 'uap_ajax_check_onClick_field_condition("' . $field_arr['conditional_logic_corresp_field'] . '", "#' . $field_id . '", "' . $field_arr['name'] . '", "checkbox", ' . $show . ');';
@@ -447,7 +447,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 								jQuery(".uap-form-create-edit [name=\''.$field_arr['conditional_logic_corresp_field'].'[]\'], .uap-form-create-edit [name='.$field_arr['conditional_logic_corresp_field'].']").on("click", function(){
 									' . $js_function . '
 								});
-							';							
+							';
 							break;
 						case 'radio':
 							$js_function = 'uap_ajax_check_onClick_field_condition("' . $field_arr['conditional_logic_corresp_field'] . '", "#' . $field_id . '", "' . $field_arr['name'] . '", "radio", ' . $show . ');';
@@ -455,7 +455,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 								jQuery(".uap-form-create-edit [name='.$field_arr['conditional_logic_corresp_field'].']").on("click", function(){
 									' . $js_function . '
 								});
-							';							
+							';
 							break;
 						case 'select':
 							$js_function = 'uap_ajax_check_field_condition_onblur_onclick("' . $field_arr['conditional_logic_corresp_field'] . '", "#' . $field_id . '", "' . $field_arr['name'] . '", ' . $show . ');';
@@ -471,7 +471,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 								jQuery(".uap-form-create-edit [name=\''.$field_arr['conditional_logic_corresp_field'].'[]\']").on("change", function(){
 									' . $js_function . '
 								});
-							';							
+							';
 							break;
 					}
 					if (!empty($js_function)){
@@ -484,15 +484,15 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				if ($field_arr['req']){
 					$this->exception_fields[] = $field_arr['name'];
 				}
-				
+
 				if (empty($show) || !empty($no_on_edit)){
 					//we must hide this field and show only when correlated field it's completed with desired value
 					$this->global_css .= "#$field_id{display: none;}";
-				} 
+				}
 			}
 		}
-		
-		private function print_fields($v=array()){		
+
+		private function print_fields($v=array()){
 			/*
 			 * @param array
 			 * @return string
@@ -505,13 +505,13 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			 	$disabled = 'disabled';
 			 }
 			 $parent_id = 'uap_reg_' . $v['type'] . '_' . rand(1,10000);
-			 
+
 			 $this->check_for_conditional_logic($v, $parent_id);
-			 
+
 			 if (!empty($v['req']) || $v['type']=='conditional_text'){
 			 	$this->required_fields[] = array('name' => $v['name'], 'type'=>$v['type']);
 			 }
-			 
+
 			 switch ($this->register_template){
 			 	 case 'uap-register-8':
 				 case 'uap-register-9':
@@ -527,7 +527,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 							$placeholder .= __($v['label'], 'uap');
 						 } else {
 							$placeholder .= uap_correct_text($v['label']);
-						 }	
+						 }
 					 } else {
 						 $str .= '<label class="uap-labels-register">';
 						 if ($v['req']){
@@ -536,8 +536,8 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 						 if (isset($v['native_wp']) && $v['native_wp']){
 							$str .= __($v['label'], 'uap');
 						 } else {
-						 	$str .= uap_correct_text($v['label']);						
-						 }						 
+						 	$str .= uap_correct_text($v['label']);
+						 }
 						 $str .= '</label>';
 					 }
 					 $val = '';
@@ -547,26 +547,26 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			 		 if (empty($val) && $v['type']=='plain_text'){ //maybe it's plain text
 					 	$val = $v['plain_text_value'];
 					 }
-					 
+
 					 $multiple_values = FALSE;
 					 if (isset($v['values']) && $v['values']){
 					 	//is checkbox, select or radio input field, so we have to include multiple+_values into indeed_create_form_elelemt
 					 	$multiple_values = uap_from_simple_array_to_k_v($v['values']);
-					 }	
-					 			
+					 }
+
 					 if (empty($v['sublabel'])){
 					 	$v['sublabel'] = '';
 					 }
 					 if (empty($v['class'])){
 					 	$v['class'] = '';
 					 }
-					 					 				 	 
-					 $str .= uap_create_form_element(array(	'type'=>$v['type'], 'name'=>$v['name'], 'value' => $val, 
+
+					 $str .= uap_create_form_element(array(	'type'=>$v['type'], 'name'=>$v['name'], 'value' => $val,
 					 											'disabled' => $disabled, 'placeholder' => $placeholder, 'multiple_values'=>$multiple_values,
-					 											'user_id'=>$this->user_id, 'sublabel' => $v['sublabel'], 'class' => $v['class'] ));		
+					 											'user_id'=>$this->user_id, 'sublabel' => $v['sublabel'], 'class' => $v['class'] ));
 			 		 if (!empty(self::$print_errors[$v['name']])){
 					 	$str .= '<div class="uap-register-notice">' . self::$print_errors[$v['name']] . '</div>';
-					 }		 
+					 }
 					 $str .= '</div>';
 				 break;
 				 case 'uap-register-4':
@@ -585,7 +585,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 							$placeholder .= __($v['label'], 'uap');
 						 } else {
 							$placeholder .= uap_correct_text($v['label']);
-						 }	
+						 }
 					 } else {
 							 $str .= '<label class="uap-labels-register">';
 							 if ($v['req']){
@@ -594,8 +594,8 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 							 if (isset($v['native_wp']) && $v['native_wp']){
 								$str .= __($v['label'], 'uap');
 							 } else {
-								$str .= uap_correct_text($v['label']);	
-							 }						 
+								$str .= uap_correct_text($v['label']);
+							 }
 							 $str .= '</label>';
 					 }
 					 $val = '';
@@ -605,20 +605,20 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			 		 if (empty($val) && $v['type']=='plain_text'){ //maybe it's plain text
 					 	$val = $v['plain_text_value'];
 					 }
-					 
+
 			 		 $multiple_values = FALSE;
 					 if (isset($v['values']) && $v['values']){
 					 	//is checkbox, select or radio input field, so we have to include multiple+_values into indeed_create_form_elelemt
 					 	$multiple_values = uap_from_simple_array_to_k_v($v['values']);
-					 }		
-					 
+					 }
+
 					 if (empty($v['sublabel'])){
 					 	$v['sublabel'] = '';
-					 }	
+					 }
 					 if (empty($v['class'])){
 					 	$v['class'] = '';
-					 }		
-					 
+					 }
+
 					 $str .= uap_create_form_element(array( 'type'=>$v['type'], 'name'=>$v['name'], 'value' => $val,
 					 										   'disabled' => $disabled, 'placeholder' => $placeholder, 'multiple_values'=>$multiple_values,
 					 											'user_id'=>$this->user_id, 'sublabel' => $v['sublabel'], 'class' => $v['class'] ));
@@ -627,7 +627,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 					 }
 					 $str .= '</div>';
 				 break;
-				 
+
 				  case 'uap-register-6':
 				  	 //////// FORM FIELD
 				  	 $temp_type_class = 'uap-form-' . $v['type'];
@@ -640,31 +640,31 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 						$str .= __($v['label'], 'uap');
 					 } else {
 						$str .= uap_correct_text($v['label']);
-					 }						 
+					 }
 					 $str .= '</label>';
-		
+
 					 $val = '';
 					 if (isset($this->user_data[$v['name']])){
 					 	$val = $this->user_data[$v['name']];
-					 } 
+					 }
 			 		 if (empty($val) && $v['type']=='plain_text'){ //maybe it's plain text
 					 	$val = $v['plain_text_value'];
 					 }
-					 
+
 					 $multiple_values = FALSE;
 					 if (isset($v['values']) && $v['values']){
 					 	//is checkbox, select or radio input field, so we have to include multiple+_values into indeed_create_form_elelemt
 					 	$multiple_values = uap_from_simple_array_to_k_v($v['values']);
-					 }	
-					 
+					 }
+
 					 if (empty($v['sublabel'])){
 					 	$v['sublabel'] = '';
-					 }	
+					 }
 
 					 if (empty($v['class'])){
 					 	$v['class'] = '';
 					 }
-					 
+
 					 $str .= uap_create_form_element(array( 'type'=>$v['type'], 'name'=>$v['name'], 'value' => $val,
 					 										   'disabled' => $disabled, 'multiple_values'=>$multiple_values,
 					 											'user_id'=>$this->user_id, 'sublabel' => $v['sublabel'], 'class' => $v['class'] ));
@@ -685,9 +685,9 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 						$str .= __($v['label'], 'uap');
 					 } else {
 					 	$str .= uap_correct_text($v['label']);
-					 }						 
+					 }
 					 $str .= '</label>';
-		
+
 					 $val = '';
 					 if (isset($this->user_data[$v['name']])){
 					 	$val = $this->user_data[$v['name']];
@@ -695,21 +695,21 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 					 if (empty($val) && $v['type']=='plain_text'){ //maybe it's plain text
 					 	$val = $v['plain_text_value'];
 					 }
-					 
+
 					 $multiple_values = FALSE;
 					 if (isset($v['values']) && $v['values']){
 					 	//is checkbox, select or radio input field, so we have to include multiple+_values into indeed_create_form_elelemt
 					 	$multiple_values = uap_from_simple_array_to_k_v($v['values']);
 					 }
-					 
+
 					 if (empty($v['sublabel'])){
 					 	$v['sublabel'] = '';
-					 }	
+					 }
 
 					 if (empty($v['class'])){
 					 	$v['class'] = '';
 					 }
-					 
+
 					 $str .= uap_create_form_element(array( 'type'=>$v['type'], 'name'=>$v['name'], 'value' => $val,
 					 										   'disabled' => $disabled, 'multiple_values'=>$multiple_values,
 					 										   'user_id'=>$this->user_id, 'sublabel' => $v['sublabel'], 'class' => $v['class'] ));
@@ -719,7 +719,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 					 $str .= '</div>';
 				 break;
 			 }
-			return $str;	
+			return $str;
 		}
 		///////
 		private function print_tos($v=array()){
@@ -739,42 +739,42 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				$str .= '<input type="checkbox" value="1" name="tos" class="' . $class . '" />';
 				$str .= '<a href="'.$tos_link.'" target="_blank">' . $tos_msg . '</a>';
 				$str .= '</div>';
-			}									
-			return $str;	
+			}
+			return $str;
 		}
-		
-		
-		
+
+
+
 		//////
 		private function print_captcha($v=array()){
 			/*
 			 * @param array
 			 * @return string
-			 */			
+			 */
 			$str = '';
 			$key = get_option('uap_recaptcha_public');
 			if ($key){
 				$class = (empty($v['class'])) ? '' : $v['class'];
 				$str .= '<div class="g-recaptcha-wrapper" class="' . $class . '">';
 				$str .= '<div class="g-recaptcha" data-sitekey="' . $key . '"></div>';
-				$str .= '<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>';				
+				$str .= '<script type="text/javascript" src="https://www.google.com/recaptcha/api.js?hl=en"></script>';
 				$str .= '</div>';
-			}	
+			}
 			return $str;
 		}
 
-		
+
 		private function print_overview_post_select(){
 			/*
-			 * dropdown with all post 
+			 * dropdown with all post
 			 * @param none
 			 * @return string
 			 */
 			$str = '';
 			global $indeed_db;
 			$default_pages_arr = $indeed_db->return_settings_from_wp_option('general-redirects');
-			$default_pages_arr = array_diff_key($default_pages_arr, array(	'uap_general_logout_redirect'=>'', 
-																			'uap_general_register_redirect'=>'', 
+			$default_pages_arr = array_diff_key($default_pages_arr, array(	'uap_general_logout_redirect'=>'',
+																			'uap_general_register_redirect'=>'',
 																			'uap_general_login_redirect'=>'' ));//let's exclude the redirect pages
 			$args = array(
 					'posts_per_page'   => 100,/// 1000
@@ -785,7 +785,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 					'post_status'      => 'publish',
 					'post__not_in'	   => $default_pages_arr,
 			);
-			
+
 			$posts_array = get_posts( $args );
 			$arr['-1'] = '...';
 			foreach ($posts_array as $k=>$v){
@@ -802,15 +802,15 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			$str .= '</div>';
 			return $str;
 		}
-		
+
 		///////
 		public function save_update_user(){
 			/*
 			 * @param none
 			 * @return none
 			 */
-			
-			$this->userdata();//set the user data, in case of new user the array will contain only keys						
+
+			$this->userdata();//set the user data, in case of new user the array will contain only keys
 			$this->check_username();
 			$this->check_password();
 			$this->check_email();
@@ -824,13 +824,13 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			if (!empty($_REQUEST['uap_exceptionsfields'])){
 				$this->exception_fields = explode(',', $_REQUEST['uap_exceptionsfields']);
 			}
-			
+
 			$custom_meta_user = array();
 			if (!$this->is_public){
-				///////// UPDATE THIS 
+				///////// UPDATE THIS
 				$custom_meta_user['uap_overview_post'] = $_REQUEST['uap_overview_post'];
 			}
-			
+
 			foreach ($this->register_fields as $value){
 				$name = $value['name'];
 				if (isset($_REQUEST[$name])){
@@ -847,13 +847,13 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 					}
 				}
 			}
-				
+
 			if ($this->errors){
 				 //print the error and exit
 				 $this->return_errors();
 				 return FALSE;
-			}			
-	
+			}
+
 			//=========================== SAVE / UPDATE
 			//wp native user
 			if ($this->type=='create'){
@@ -871,48 +871,48 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 
 			$this->do_opt_in();
 			$this->double_email_verification();
-			
+
 			//custom user meta
 			if ($custom_meta_user){
-				foreach ($custom_meta_user as $k=>$v){			
+				foreach ($custom_meta_user as $k=>$v){
 					update_user_meta($this->user_id, $k, $v);
 				}
 			}
-			
+
 			//auto login
-			if ($this->is_public && $this->type=='create' && 
-					!empty($this->register_metas['uap_register_auto_login']) && !empty($this->register_metas['uap_register_new_user_role']) 
+			if ($this->is_public && $this->type=='create' &&
+					!empty($this->register_metas['uap_register_auto_login']) && !empty($this->register_metas['uap_register_new_user_role'])
 					&& $this->register_metas['uap_register_new_user_role']!='pending_user'){
 				wp_set_auth_cookie($this->user_id);
 			}
-						
-			$this->set_rank();//USER RANKS	
+
+			$this->set_rank();//USER RANKS
 			$this->set_mlm_parent();
-					
-			if ($this->is_public){				
+
+			if ($this->is_public){
 				/// NOTIFICATIONS
 				if ($this->type=='create'){
 					if ($this->send_password_via_mail){
 						/// send generated password to user
 						uap_send_user_notifications($this->user_id, 'register_lite_send_pass_to_user', FALSE, array('{NEW_PASSWORD}' => $this->fields['user_pass']));
-					}					
+					}
 					uap_send_user_notifications($this->user_id, 'register', $this->current_rank);//notify the affiliate
-					uap_send_user_notifications($this->user_id, 'admin_user_register', $this->current_rank);//notify the admin				
+					uap_send_user_notifications($this->user_id, 'admin_user_register', $this->current_rank);//notify the admin
 				} else {
-					uap_send_user_notifications($this->user_id, 'user_update', $this->current_rank);//notify the affiliate					
+					uap_send_user_notifications($this->user_id, 'user_update', $this->current_rank);//notify the affiliate
 					uap_send_user_notifications($this->user_id, 'admin_affiliate_update_profile');/// USER HAS UPDATE PROFILE, SEND EMAIL TO ADMIN ABOUT THAT
 				}
 				$this->succes_message();//this will redirect
 			}
-	
+
 		}
 
-		
+
 		///handle password
 		private function check_password(){
 			if(($this->type=='edit' && !empty($_REQUEST['pass1'])) || $this->type=='create' ){
 				///// only for create new user or in case that current user has selected a new password (edit)
-				
+
 				if ($this->type=='create'){
 					$key = uap_array_value_exists($this->register_fields, 'pass1', 'name');
 					if (isset($this->register_fields[$key])){
@@ -925,23 +925,23 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 							$this->set_password_automaticly = TRUE;
 							return;
 						}
-					}					
+					}
 				}
-				
+
 				//check the strength
 				if ($this->register_metas['uap_register_pass_options']==2){
 					//characters and digits
 					if (!preg_match('/[a-z]/', $_REQUEST['pass1'])){
 						$this->errors['pass1'] = $this->register_metas['uap_register_pass_letter_digits_msg'];
-					}						
+					}
 					if (!preg_match('/[0-9]/', $_REQUEST['pass1'])){
 						$this->errors['pass1'] = $this->register_metas['uap_register_pass_letter_digits_msg'];
-					}	
+					}
 				} elseif ($this->register_metas['uap_register_pass_options']==3){
 					//characters, digits and one Uppercase letter
 					if (!preg_match('/[a-z]/', $_REQUEST['pass1'])){
 						$this->errors['pass1'] = $this->register_metas['uap_register_pass_let_dig_up_let_msg'];
-					}						
+					}
 					if (!preg_match('/[0-9]/', $_REQUEST['pass1'])){
 						$this->errors['pass1'] = $this->register_metas['uap_register_pass_let_dig_up_let_msg'];
 					}
@@ -949,7 +949,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 						$this->errors['pass1'] = $this->register_metas['uap_register_pass_let_dig_up_let_msg'];
 					}
 				}
-				
+
 				//check the length of password
 				if($this->register_metas['uap_register_pass_min_length']!=0){
 					if(strlen($_REQUEST['pass1'])<$this->register_metas['uap_register_pass_min_length']){
@@ -966,14 +966,14 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			}
 			$pass1 = uap_array_value_exists($this->register_fields, 'pass1', 'name');
 			if ($pass1!==FALSE && isset($this->register_fields[$pass1])){
-				unset($this->register_fields[$pass1]);				
+				unset($this->register_fields[$pass1]);
 			}
 			$pass2 = uap_array_value_exists($this->register_fields, 'pass2', 'name');
 			if ($pass2!==FALSE && isset($this->register_fields[$pass2])){
 				unset($this->register_fields[$pass2]);
 			}
 		}
-		
+
 		///check email
 		private function check_email(){
 			if (!is_email($_REQUEST['user_email'])) {
@@ -983,20 +983,20 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				if ($_REQUEST['confirm_email']!=$_REQUEST['user_email']){
 					$this->errors['user_email'] = $this->register_metas['uap_register_emails_not_match_msg'];
 				}
-			}	
+			}
 			if (email_exists( $_REQUEST['user_email'])){
 				if ($this->type=='create' || ($this->type=='edit' && email_exists( $_REQUEST['user_email'])!=$this->user_id  ) ){
 					$this->errors['user_email'] = $this->register_metas['uap_register_email_is_taken_msg'];
-				}					
+				}
 			}
 		}
-		
+
 		//check username
 		private function check_username(){
 			//only for create
-			
+
 			if ($this->type=='create'){
-				
+
 				///NO USERNAME FIELd
 				$key = uap_array_value_exists($this->register_fields, 'user_login', 'name');
 				if (isset($this->register_fields[$key])){
@@ -1009,18 +1009,18 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 						$this->set_username_automaticly = TRUE;
 						return;
 					}
-				}						
-				
+				}
+
 				if (!validate_username( $_REQUEST['user_login'])) {
 					$this->errors['user_login'] = $this->register_metas['uap_register_error_username_msg'];
 				}
 				if (username_exists($_REQUEST['user_login'])) {
 					$this->errors['user_login'] = $this->register_metas['uap_register_username_taken_msg'];
-				}				
+				}
 			}
 
 		}
-		
+
 		///////// TERMS AND CONDITIONS CHECKBOX CHECK
 		private function check_tos(){
 			//check if tos was printed
@@ -1029,10 +1029,10 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			if (!$tos_page_id || !$tos_msg){
 				$tos = uap_array_value_exists($this->register_fields, 'tos', 'name');
 				if ($tos!==FALSE && isset($this->register_fields[$tos])){
-					unset($this->register_fields[$tos]);					
+					unset($this->register_fields[$tos]);
 				}
 				return;
-			}			
+			}
 
 			if ($this->tos && $this->type=='create'){
 				$tos = uap_array_value_exists($this->register_fields, 'tos', 'name');
@@ -1046,10 +1046,10 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				$tos = uap_array_value_exists($this->register_fields, 'tos', 'name');
 				if ($tos!==FALSE && isset($this->register_fields[$tos])){
 					unset($this->register_fields[$tos]);
-				} 
+				}
 			}
 		}
-		
+
 		//////////// CAPTCHA
 		private function check_captcha(){
 			if ($this->type=='create' && $this->captcha){
@@ -1058,20 +1058,20 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				if (!$captcha_key){
 					$captcha = uap_array_value_exists($this->register_fields, 'recaptcha', 'name');
 					if ($captcha!==FALSE){
-						unset($this->register_fields[$captcha]);						
+						unset($this->register_fields[$captcha]);
 					}
 					return;
 				}
-				
+
 				$captcha = uap_array_value_exists($this->register_fields, 'recaptcha', 'name');
 				if ($captcha!==FALSE && $this->register_fields[$captcha][$this->display_type]){
 					$captha_err = get_option('uap_register_err_recaptcha');
 					unset($this->register_fields[$captcha]);
-					if (isset($_REQUEST['g-recaptcha-response'])){					
+					if (isset($_REQUEST['g-recaptcha-response'])){
 						$secret = get_option('uap_recaptcha_private');
 						if ($secret){
 							if (!class_exists('ReCaptcha')){
-								include_once UAP_PATH . 'classes/recaptcha/autoload.php';								
+								include_once UAP_PATH . 'classes/recaptcha/autoload.php';
 							}
 							$recaptcha = new \ReCaptcha\ReCaptcha($secret);
 							$resp = $recaptcha->verify($_POST['g-recaptcha-response'], $_SERVER['REMOTE_ADDR']);
@@ -1087,7 +1087,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				}
 			}
 		}
-		
+
 		private function uap_is_req_conditional_field($field_meta=array()){
 			/*
 			 * @param array
@@ -1104,7 +1104,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				}
 			}
 		}
-		
+
 		////WP ROLE
 		private function set_roles(){
 			//role
@@ -1112,15 +1112,18 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 				if (isset($this->register_metas['uap_register_new_user_role'])){
 					$this->fields['role'] = $this->register_metas['uap_register_new_user_role'];
 				} else {
-					$this->fields['role'] = 'subscriber';
-				}	
+					$this->fields['role'] = get_option('default_role');
+					if (empty($this->fields['role'])){
+							$this->fields['role'] = 'subscriber';
+					}
+				}
 			} else if (!$this->is_public){
 				if (isset($_REQUEST['role'])){
 					$this->fields['role'] = $_REQUEST['role'];
 				}
 			}
 		}
-		
+
 		private function set_the_slug(){
 			/*
 			 * @param none
@@ -1138,7 +1141,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			 	}
 			 }
 		}
-		
+
 		private function set_automatically_fields(){
 			/*
 			 * @param none
@@ -1148,15 +1151,15 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			 	$this->fields['user_login'] = @$_POST['user_email'];
 			 }
 			 if (!empty($this->set_password_automaticly)){
-				$this->fields['user_pass'] = wp_generate_password(10);			
-				$this->send_password_via_mail = TRUE;	
+				$this->fields['user_pass'] = wp_generate_password(10);
+				$this->send_password_via_mail = TRUE;
 			 }
 		}
 
 		///RANKS
 		private function set_rank(){
 			/*
-			 * set RANK on public create, admin create, admin update. 
+			 * set RANK on public create, admin create, admin update.
 			 * @param none
 			 * @return none
 			 */
@@ -1171,7 +1174,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			}
 
 		}
-		
+
 		private function set_mlm_parent(){
 			/*
 			 * @param none
@@ -1180,15 +1183,15 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			global $indeed_db;
 			$affiliate_id = $indeed_db->affiliate_get_id_by_uid($this->user_id);
 			if ($this->type=='create' && $this->is_public && $indeed_db->is_magic_feat_enable('mlm') ){
-				/// SET MLM PARENT IN PUBLIC SECTION		
+				/// SET MLM PARENT IN PUBLIC SECTION
 				$indeed_db->set_mlm_relation_on_new_affiliate($affiliate_id);
 			} else if (!$this->is_public && $indeed_db->is_magic_feat_enable('mlm') && !empty($_POST['uap_affiliate_mlm_parent']) && ($this->type=='create' || !$indeed_db->mlm_get_parent($indeed_db->get_affiliate_id_by_wpuid($this->user_id)) ) ){
 				/// SET MLM PARENT IN ADMIN SECTION
 				$indeed_db->set_mlm_relation_on_new_affiliate($affiliate_id, $_POST['uap_affiliate_mlm_parent']);
-				unset($_POST['uap_affiliate_mlm_parent']);				
+				unset($_POST['uap_affiliate_mlm_parent']);
 			}
 		}
-		
+
 		///// RETURN ERROR
 		private function return_errors(){
 			/*
@@ -1196,11 +1199,11 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			 */
 			if (!empty($this->errors)){
 				global $uap_error_register;
-				$uap_error_register = $this->errors;				
-				self::$uap_error_register = $this->errors;				
+				$uap_error_register = $this->errors;
+				self::$uap_error_register = $this->errors;
 			}
 		}
-		
+
 		private function count_register_fields(){
 			$count = 0;
 			foreach ($this->register_fields as $v){
@@ -1210,20 +1213,20 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			}
 			return $count;
 		}
-		
+
 		private function succes_message(){
 			/*
 			 * REDIRECT...
 			 * @param none
 			 * @return none
 			 */
-			
+
 			if ($this->type=='create'){
-				$q_arg = 'create_message';				
+				$q_arg = 'create_message';
 			} else {
-				$q_arg = 'update_message';						
-			}				
-			
+				$q_arg = 'update_message';
+			}
+
 			$redirect = get_option('uap_general_register_redirect');
 			if ($redirect && $redirect!=-1 && $this->type=='create'){
 				$url = get_permalink($redirect);
@@ -1231,14 +1234,14 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			if (empty($url)){
 				$url = UAP_PROTOCOL . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; /// $_SERVER['SERVER_NAME']
 			}
-			
+
 			$url = add_query_arg(array('uap_register'=>$q_arg), $url);
-			
+
 			wp_redirect($url);
 			exit();
 		}
-		
-		
+
+
 		private function do_opt_in(){
 			/*
 			 * @param none
@@ -1248,8 +1251,8 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			if ($this->type=='create' && empty($double_email_verification)){
 				uap_do_opt_in($_POST['user_email']);
 			}
-		}		
-		
+		}
+
 		private function double_email_verification(){
 			/*
 			 * @param none
@@ -1257,7 +1260,7 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			 */
 			$double_email_verification = get_option('uap_register_double_email_verification');
 			if ($this->is_public && $this->type=='create' && !empty($double_email_verification) ){
-				$hash = uap_random_string(10);				
+				$hash = uap_random_string(10);
 				update_user_meta($this->user_id, 'uap_activation_code', $hash);//put the hash into user option
 				update_user_meta($this->user_id, 'uap_verification_status', -1);//set uap_verification_status @ -1
 				/// $activation_url_w_hash = UAP_URL . 'public/arrive.php?uid=' . $this->user_id . '&do_uap_code=' . $hash;
@@ -1271,6 +1274,6 @@ if(!class_exists('Uap_Add_Edit_Affiliate')){
 			}
 		}
 
-		
+
 	}//end of class Uap_Add_Edit_Affiliate
 }

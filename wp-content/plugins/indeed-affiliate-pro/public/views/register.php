@@ -1,6 +1,6 @@
 <?php $data['template_with_cols'] = array('uap-register-6', 'uap-register-11', 'uap-register-12', 'uap-register-13');?>
 <div class="uap-register-form  <?php echo $data['template'];?>">
-	<style><?php echo $data['css'];?></style>
+	<style><?php echo stripslashes($data['css']);?></style>
 	<form action="<?php echo @$data['action'];?>" method="post" name="<?php echo $data['form_name'];?>" id="<?php echo $data['form_id'];?>" class="uap-form-create-edit" enctype="multipart/form-data" >
 
 		<?php do_action('uap_register_form_before_form_fields');?>

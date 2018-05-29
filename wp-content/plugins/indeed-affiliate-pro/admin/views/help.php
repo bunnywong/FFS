@@ -12,24 +12,24 @@
 			<?php endif;?>
 			<div class="iump-form-line iump-no-border" style="width:10%; float:left; box-sizing:border-box; text-align:right; font-weight:bold;">
 				<label for="tag-name" class="iump-labels" style="text-align: left;"><?php _e('Purchase Code', 'uap');?></label>
-			</div>
-			<div class="iump-form-line iump-no-border" style="width:70%; float:left; box-sizing:border-box;">
+			</div>	
+			<div class="iump-form-line iump-no-border" style="width:70%; float:left; box-sizing:border-box;">	
 				<input name="uap_licensing_code" type="text" value="<?php echo $data['uap_envato_code'];?>" style="width:100%;"/>
 			</div>
 			<div class="uap-stuffbox-submit-wrap iump-submit-form" style="width:20%; float:right; box-sizing:border-box; text-align:center;">
 				<input type="submit" value="<?php _e('Activate', 'uap');?>" name="uap_save_licensing_code" <?php echo $disabled;?> class="button button-primary button-large" />
 			</div>
 			<div class="uap-clear"></div>
-				<div class="uap-license-status"><?php
+				<div class="uap-license-status"><?php 
 					if (isset($submited)){
 							if ($submited){
 							?>
 								<div class="uap-dashboard-valid-license-code"><?php _e("You've activated the Ultimate Affiliate Pro plugin!", 'uap');?></div>
-							<?php
+							<?php 
 							} else {
 							?>
 								<div class="uap-dashboard-err-license-code"><?php _e("You have entered an invalid purchase code or the Envato API could be down for a moment.", 'uap');?></div>
-							<?php
+							<?php 	
 							}
 					}
 				?></div>
@@ -39,9 +39,9 @@
 				<a href="http://codecanyon.net/item/ultimate-affiliate-pro-wordpress-plugin/16527729?ref=azzaroco" target="_blank">
 					<img src="<?php echo UAP_URL;?>assets/images/purchase_code.jpg" style="margin: 0 auto; display: block;"/>
 					</a>
-				</div>
+				</div>	
 			</div>
-	</form>
+	</form>		
 </div>
 
 <div class="uap-stuffbox">
@@ -70,6 +70,6 @@
 		<div class="inside">
 			<iframe src="http://affiliate.wpindeed.com/documentation/" width="100%" height="1000px" ></iframe>
 		</div>
-	</div>
+	</div>	
 
 </div>

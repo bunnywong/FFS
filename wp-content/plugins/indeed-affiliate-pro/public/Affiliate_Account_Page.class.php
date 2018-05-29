@@ -192,7 +192,9 @@ if (!class_exists('Affiliate_Account_Page')){
 			} else {
 				$data['show_tab_list'] = array();
 			}
-
+			
+			$data['uap_account_page_custom_css'] = stripslashes($this->account_page_settings['uap_account_page_custom_css']);
+			
 			$data['message'] = uap_replace_constants($this->account_page_settings['uap_ap_welcome_msg'], $this->uid);
 			$data['message'] = stripslashes(uap_format_str_like_wp($data['message']));
 			if ($this->account_page_settings['uap_ap_edit_show_avatar']){
@@ -263,7 +265,11 @@ if (!class_exists('Affiliate_Account_Page')){
 			global $indeed_db;
 			$do_qr = $indeed_db->is_magic_feat_enable('qr_code');
 
-			$data['home_url'] = $this->create_link_for_aff(get_home_url());
+			$link_for_aff = get_option('uap_referral_custom_base_link');
+			if (empty($link_for_aff)){
+					$link_for_aff = get_home_url();
+			}
+			$data['home_url'] = $this->create_link_for_aff($link_for_aff);
 			if ($do_qr){
 				$data['qr_home'] = uap_generate_qr_code($data['home_url'], $this->affiliate_id . '_home_url');
 			}
@@ -860,16 +866,16 @@ if (!class_exists('Affiliate_Account_Page')){
 			$data['currency'] = get_option('uap_currency');
 
 			$settings = $indeed_db->return_settings_from_wp_option('wallet');
-
 			if (empty($_GET['add_new'])){
 				//// LISTING
 				$hash_check = get_user_meta($this->uid, 'uap_wallet_hash', TRUE);
-				if (isset($_POST['save']) && !empty($_POST['uapcheck']) && !empty($hash_check) && $hash_check==$_POST['uapcheck']){
+				if (isset($_POST['save']) && !empty($_POST['uapcheck']) && !empty($hash_check)
+							&& $hash_check==$_POST['uapcheck'] && !empty($_POST['referrals'])){
 					$referral_list = explode(',', $_POST['referrals']);
 					$indeed_db->create_wallet_item($_POST['service_type'], $referral_list, $this->affiliate_id);
 					update_user_meta($this->uid, 'uap_wallet_hash', '');
 				}
-				$data['stats'] = $indeed_db->get_stats_for_payments($this->affiliate_id);
+				$data['stats'] = $indeed_db->get_stats_for_payments($this->affiliate_id, @$settings['uap_wallet_exclude_sources']);
 				$data['items'] = $indeed_db->get_all_wallet_items_for_affiliate($this->affiliate_id);
 				$data['stats']['wallet'] = 0;
 				if ($data['items']){
@@ -884,9 +890,20 @@ if (!class_exists('Affiliate_Account_Page')){
 				/// ADD NEW
 				$data['form_action'] = add_query_arg('uap_aff_subtab', 'wallet', $this->account_page_base_url);
 				$data['services'] = uap_get_active_services();
+				if (!empty($settings['uap_wallet_exclude_sources']) && $settings['uap_wallet_exclude_sources']!=-1){
+						$excluded_sevices = explode(',', $settings['uap_wallet_exclude_sources']);
+						foreach ($excluded_sevices as $service_type){
+								if (isset($data['services'][$service_type])) unset($data['services'][$service_type]);
+						}
+				}
 				$where[] = "r.payment=0 ";
 				$where[] = "r.status=2 ";
 				$where[] = "r.affiliate_id=" . $this->affiliate_id;
+
+				//if (!empty($settings['uap_wallet_exclude_sources'])){
+				//		$where [] = "r.source NOT IN ('{$settings['uap_wallet_exclude_sources']}')";
+				//}
+
 				$data['referrals'] = $indeed_db->get_referrals(-1, -1, FALSE, '', '', $where);
 				$data['hash'] = time() . $this->uid;
 				update_user_meta($this->uid, 'uap_wallet_hash', $data['hash']);

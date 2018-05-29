@@ -15,7 +15,7 @@ function ia_generate_link(aff_id){
 	}
 	if (jQuery('#friendly_links').html() && jQuery('#friendly_links').val()==1){
 		var friendlyLinks = 1;
-	}	
+	}
    	jQuery.ajax({
         type : "post",
         url : decodeURI(ajax_url),
@@ -34,18 +34,18 @@ function ia_generate_link(aff_id){
         		var s = obj.social;
         		var qr = obj.qr_code;
         		if (u!=0){
-                	jQuery('.uap-ap-generate-links-result').html(u); 
+                	jQuery('.uap-ap-generate-links-result').html(u);
                 	jQuery('.uap-ap-generate-links-result').css('visibility', 'visible');
         		}
         		if (s){
         			jQuery('.uap-ap-generate-social-result').html(s);
-                	jQuery('.uap-ap-generate-social-result').css('visibility', 'visible');        			
+                	jQuery('.uap-ap-generate-social-result').css('visibility', 'visible');
         		}
         		if (qr){
         			jQuery('.uap-ap-generate-qr-code').html(qr);
-                	jQuery('.uap-ap-generate-qr-code').css('visibility', 'visible');         			
+                	jQuery('.uap-ap-generate-qr-code').css('visibility', 'visible');
         		}
-        	}      	 	
+        	}
         }
    });
 }
@@ -55,13 +55,13 @@ function uap_register_check_via_ajax(the_type){
 	var target_id = '#' + jQuery('.uap-form-create-edit [name='+the_type+']').parent().attr('id');
 	var val1 = jQuery('.uap-form-create-edit [name='+the_type+']').val();
 	var val2 = '';
-	
+
 	if (the_type=='pass2'){
 		val2 = jQuery('.uap-form-create-edit [name=pass1]').val();
 	} else if (the_type=='confirm_email'){
 		val2 = jQuery('.uap-form-create-edit [name=user_email]').val();
 	}
-	
+
    	jQuery.ajax({
         type : "post",
         url : decodeURI(ajax_url),
@@ -76,7 +76,7 @@ function uap_register_check_via_ajax(the_type){
         	jQuery(target_id + ' .uap-register-notice').remove();
         	jQuery('.uap-form-create-edit [name='+the_type+']').removeClass('uap-input-notice');
         	if (data==1){
-        		// it's all good 
+        		// it's all good
         	} else {
         		jQuery(target_id).append('<div class="uap-register-notice">'+data+'</div>');
         		jQuery('.uap-form-create-edit [name='+the_type+']').addClass('uap-input-notice');
@@ -92,25 +92,25 @@ function uap_ajax_check_field_condition_onblur_onclick(check_name, field_id, fie
 	uap_ajax_check_field_condition(check_value, field_id, field_name, show);
 }
 
-function uap_ajax_check_onClick_field_condition(check_name, field_id, field_name, type, show){	
+function uap_ajax_check_onClick_field_condition(check_name, field_id, field_name, type, show){
 	if (type=='checkbox'){
 		var vals = [];
 		jQuery(".uap-form-create-edit [name='"+check_name+"[]']:checked").each(function() {
 			vals.push(jQuery(this).val());
 	    });
-		var check_value = vals.join(',');		
+		var check_value = vals.join(',');
 	} else {
 		var check_value = jQuery(".uap-form-create-edit [name="+check_name+"]:checked").val();
 	}
-	
-	uap_ajax_check_field_condition(check_value, field_id, field_name, show);	
+
+	uap_ajax_check_field_condition(check_value, field_id, field_name, show);
 }
 
 function uap_ajax_check_onChange_multiselect_field_condition(check_name, field_id, field_name, show){
 	var obj = jQuery(".uap-form-create-edit [name='"+check_name+"[]']").val();
 	if (obj!=null){
 		var check_value = obj.join(',');
-		uap_ajax_check_field_condition(check_value, field_id, field_name, show);		
+		uap_ajax_check_field_condition(check_value, field_id, field_name, show);
 	}
 }
 
@@ -127,40 +127,40 @@ function uap_ajax_check_field_condition(check_value, field_id, field_name, show)
         	var str = jQuery("#uap_exceptionsfields").val();
         	if (str){
             	var arr = str.split(',');
-            	var index = arr.indexOf(field_name);        		
+            	var index = arr.indexOf(field_name);
         	} else {
         		var arr = [];
         	}
-        	
-        	if (data=='1'){        		
+
+        	if (data=='1'){
                 if (show==1){
                 	jQuery(field_id).fadeIn(200);
                 	if (arr.indexOf(field_name)!=-1){
-                        arr.splice(index, 1);                		
-                	}           	
+                        arr.splice(index, 1);
+                	}
                 } else {
                 	jQuery(field_id).fadeOut(200);
                 	if (arr.indexOf(field_name)==-1){
                 		arr.push(field_name);
-                	}        			
-        			            	
-                }                
-        	} else {        		
+                	}
+
+                }
+        	} else {
                     if (show==1){
                     	jQuery(field_id).fadeOut(200);
                     	if (arr.indexOf(field_name)==-1){
                     		arr.push(field_name);
-                    	}         	
+                    	}
                     } else {
                     	jQuery(field_id).fadeIn(200);
                     	if (arr.indexOf(field_name)!=-1){
-                            arr.splice(index, 1);                            		
-                    	}  	
-                    } 
+                            arr.splice(index, 1);
+                    	}
+                    }
         	}
         	if (arr){
-            	var str = arr.join(',');   
-            	jQuery("#uap_exceptionsfields").val(str);        		
+            	var str = arr.join(',');
+            	jQuery("#uap_exceptionsfields").val(str);
         	}
         }
    	});
@@ -179,7 +179,7 @@ function uap_get_checkbox_radio_value(type, selector){
 		});
 		if (arr.length>0){
 			return arr.join(',');
-		}		
+		}
 	}
 	return '';
 }
@@ -187,7 +187,7 @@ function uap_get_checkbox_radio_value(type, selector){
 function uap_register_check_via_ajax_rec(types_arr){
 	jQuery('.uap-register-notice').remove();
 	var fields_to_send = [];
-	
+
 	//EXCEPTIONS
 	var exceptions = jQuery("#uap_exceptionsfields").val();
 	if (exceptions){
@@ -199,23 +199,23 @@ function uap_register_check_via_ajax_rec(types_arr){
 		if (exceptions_arr && exceptions_arr.indexOf(types_arr[i])>-1){
 			continue;
 		}
-		
+
 		jQuery('.uap-form-create-edit [name='+types_arr[i]+']').removeClass('uap-input-notice');
-		
+
 		var field_type = jQuery('.uap-form-create-edit [name=' + types_arr[i] + ']').attr('type');
-		if (typeof field_type=='undefined'){			
-			var field_type = jQuery('.uap-form-create-edit [name=\'' + types_arr[i] + '[]\']').attr('type');	
+		if (typeof field_type=='undefined'){
+			var field_type = jQuery('.uap-form-create-edit [name=\'' + types_arr[i] + '[]\']').attr('type');
 		}
-		if (typeof field_type=='undefined'){				
+		if (typeof field_type=='undefined'){
 			var field_type = jQuery('.uap-form-create-edit [name=\'' + types_arr[i] + '\']').prop('nodeName');
 		}
-		if (typeof field_type=='undefined'){				
+		if (typeof field_type=='undefined'){
 			var field_type = jQuery('.uap-form-create-edit [name=\'' + types_arr[i] + '[]\']').prop('nodeName');
 			if (field_type=='SELECT'){
 				field_type = 'multiselect';
-			}	
-		}		
-		
+			}
+		}
+
 		if (field_type=='checkbox' || field_type=='radio'){
 			var val1 = uap_get_checkbox_radio_value(field_type, types_arr[i]);
 		} else if ( field_type=='multiselect' ){
@@ -225,8 +225,8 @@ function uap_register_check_via_ajax_rec(types_arr){
 			}
 		} else {
 			var val1 = jQuery('.uap-form-create-edit [name='+types_arr[i]+']').val();
-		}	
-		
+		}
+
 		var val2 = '';
 		if (types_arr[i]=='pass2'){
 			val2 = jQuery('.uap-form-create-edit [name=pass1]').val();
@@ -241,7 +241,7 @@ function uap_register_check_via_ajax_rec(types_arr){
 		}
 		fields_to_send.push({type: types_arr[i], value: val1, second_value: val2});
 	}
-	
+
    	jQuery.ajax({
         type : "post",
         url : decodeURI(ajax_url),
@@ -255,18 +255,18 @@ function uap_register_check_via_ajax_rec(types_arr){
         	for (var j=0; j<obj.length; j++){
         		var field_type = jQuery('.uap-form-create-edit [name=' + obj[j].type + ']').attr('type');
         		if (typeof field_type=='undefined'){
-        			var field_type = jQuery('.uap-form-create-edit [name=\'' + obj[j].type + '[]\']').attr('type');	
+        			var field_type = jQuery('.uap-form-create-edit [name=\'' + obj[j].type + '[]\']').attr('type');
         		}
-        		if (typeof field_type=='undefined'){				
+        		if (typeof field_type=='undefined'){
         			var field_type = jQuery('.uap-form-create-edit [name=\'' + obj[j].type + '\']').prop('nodeName');
         		}
-        		if (typeof field_type=='undefined'){				
+        		if (typeof field_type=='undefined'){
         			var field_type = jQuery('.uap-form-create-edit [name=\'' + obj[j].type + '[]\']').prop('nodeName');
         			if (field_type=='SELECT'){
         				field_type = 'multiselect';
-        			}	
-        		}	
-        		
+        			}
+        		}
+
             	if (field_type=='radio'){
             		var target_id = jQuery('.uap-form-create-edit [name='+obj[j].type+']').parent().parent().attr('id');
             	} else if (field_type=='checkbox' && obj[j].type!='tos'){
@@ -276,32 +276,32 @@ function uap_register_check_via_ajax_rec(types_arr){
             	} else {
             		var target_id = jQuery('.uap-form-create-edit [name='+obj[j].type+']').parent().attr('id');
             	}
-            		
+
             	if (obj[j].value==1){
-            		// it's all good 
+            		// it's all good
             	} else {
             		//errors
                 	if (typeof target_id=='undefined'){
                 		//no target id...insert msg after input
                 		jQuery('.uap-form-create-edit [name='+obj[j].type+']').after('<div class="uap-register-notice">'+obj[j].value+'</div>');
-                		must_submit = 0;	
+                		must_submit = 0;
                 	} else {
                 		jQuery('#'+target_id).append('<div class="uap-register-notice">'+obj[j].value+'</div>');
                 		jQuery('.uap-form-create-edit [name=' + obj[j].type + ']').addClass('uap-input-notice');
-                		must_submit = 0;                		
+                		must_submit = 0;
                 	}
-            	}            	
+            	}
         	}
 
         	if (must_submit==1){
     			window.must_submit=1;
-    			jQuery(".uap-form-create-edit").submit();     		
+    			jQuery(".uap-form-create-edit").submit();
         	} else {
-    			return false;        		
-        	}      	
+    			return false;
+        	}
         }
-   	});  
-   	
+   	});
+
 }
 
 function uap_show_subtabs(t){
@@ -313,13 +313,13 @@ function uap_show_subtabs(t){
 		jQuery('.uap-ap-menu-sign').removeClass('fa-account-down-uap');
 		jQuery('.uap-ap-menu-sign').addClass('fa-account-right-uap');
 		jQuery('.uap-public-ap-menu-subtabs').css('display', 'none');
-		jQuery('#uap_public_ap_' + t).css('display', 'block');	
+		jQuery('#uap_public_ap_' + t).css('display', 'block');
 		jQuery('#uap_fa_sign-' + t).removeClass('fa-account-right-uap');
 		jQuery('#uap_fa_sign-' + t).addClass('fa-account-down-uap');
 	}
 }
 
-function uap_payment_type(){	
+function uap_payment_type(){
 	jQuery.each(['paypal', 'bt', 'stripe', 'stripe_v2'], function(k, v){
 		jQuery('#uap_payment_with_' + v).css('display', 'none');
 	});
@@ -336,10 +336,10 @@ function uap_become_affiliate_public(){
         },
         success: function (r) {
 			if (r){
-				window.location.href = r; 
+				window.location.href = r;
 			}
         }
-   	});	
+   	});
 }
 
 function uap_add_to_wallet(divCheck, showValue, hidden_input_id){
@@ -347,7 +347,7 @@ function uap_add_to_wallet(divCheck, showValue, hidden_input_id){
     if (str!=''){
     	show_arr = str.split(',');
     	for (a in show_arr ){
-        	show_arr[a] = parseInt(show_arr[a])   		
+        	show_arr[a] = parseInt(show_arr[a])
 		}
     } else {
     	show_arr = [];
@@ -355,19 +355,19 @@ function uap_add_to_wallet(divCheck, showValue, hidden_input_id){
 
     if (jQuery(divCheck).is(':checked')){
     	if (show_arr.indexOf(showValue)==-1){
-        	show_arr.push(showValue);    		
+        	show_arr.push(showValue);
     	}
     } else {
-    	
+
         for (a in show_arr ){
         	if (parseInt(show_arr[a])==showValue){
         		show_arr.splice(a, 1);
         	}
 		}
     }
-    str = show_arr.join(',');    
+    str = show_arr.join(',');
     jQuery(hidden_input_id).val(str);
-    
+
     jQuery('#uap_total_amount').html('');
    	jQuery.ajax({
         type: 'post',
@@ -383,7 +383,7 @@ function uap_add_to_wallet(divCheck, showValue, hidden_input_id){
 				jQuery('#uap_total_amount').html(0);
 			}
         }
-   	});	    
+   	});
 }
 
 function uap_remove_wallet_item(t, c){
@@ -398,47 +398,52 @@ function uap_remove_wallet_item(t, c){
         success: function (r) {
 			if (r){
 				if (window.uap_current_url){
-					window.location.href = window.uap_current_url;					
+					window.location.href = window.uap_current_url;
 				}
 			}
         }
-   	});	    	
+   	});
 }
 
 function uap_delete_file_via_ajax(id, u_id, parent, name, hidden_id){
-   	jQuery.ajax({
-        type : "post",
-        url : decodeURI(ajax_url),
-        data : {
-                   action: "uap_delete_attachment_ajax_action",
-                   attachemnt_id: id,
-                   user_id: u_id,
-                   field_name: name,
-               },
-        success: function (data) {   
-        	jQuery(hidden_id).val('');
-        	jQuery(parent + ' .ajax-file-upload-filename').remove();        	
-        	jQuery(parent + ' .uap-delete-attachment-bttn').remove();
-        	if (jQuery(parent + ' .uap-member-photo').length){
-        		jQuery(parent + ' .uap-member-photo').remove();
-        		if (name=='uap_avatar'){
-        			jQuery(parent).prepend("<div class='uap-no-avatar uap-member-photo'></div>");
-        			jQuery(parent + " .uap-file-upload").css("display", 'block');
-        		}        		
-        	}
-        	
-        	if (jQuery(parent + " .uap-file-name-uploaded").length){
-        		jQuery(parent + " .uap-file-name-uploaded").remove();
-        	}
-        	
-        	if (jQuery(parent + ' .ajax-file-upload-progress').length){
-        		jQuery(parent + ' .ajax-file-upload-progress').remove();
-        	}
-        	if (jQuery(parent + ' .uap-icon-file-type').length){
-        		jQuery(parent + ' .uap-icon-file-type').remove();
-        	}
-        }
-   });
+	var r = confirm("Are you sure you want to delete?");
+	if (r) {
+			var s = jQuery(parent).attr('data-h');
+	   	jQuery.ajax({
+	        type : "post",
+	        url : decodeURI(ajax_url),
+	        data : {
+	                   action: "uap_delete_attachment_ajax_action",
+	                   attachemnt_id: id,
+	                   user_id: u_id,
+	                   field_name: name,
+										 h: s
+	               },
+	        success: function (data) {
+	        	jQuery(hidden_id).val('');
+	        	jQuery(parent + ' .ajax-file-upload-filename').remove();
+	        	jQuery(parent + ' .uap-delete-attachment-bttn').remove();
+	        	if (jQuery(parent + ' .uap-member-photo').length){
+	        		jQuery(parent + ' .uap-member-photo').remove();
+	        		if (name=='uap_avatar'){
+	        			jQuery(parent).prepend("<div class='uap-no-avatar uap-member-photo'></div>");
+	        			jQuery(parent + " .uap-file-upload").css("display", 'block');
+	        		}
+	        	}
+
+	        	if (jQuery(parent + " .uap-file-name-uploaded").length){
+	        		jQuery(parent + " .uap-file-name-uploaded").remove();
+	        	}
+
+	        	if (jQuery(parent + ' .ajax-file-upload-progress').length){
+	        		jQuery(parent + ' .ajax-file-upload-progress').remove();
+	        	}
+	        	if (jQuery(parent + ' .uap-icon-file-type').length){
+	        		jQuery(parent + ' .uap-icon-file-type').remove();
+	        	}
+	        }
+	   });
+	}
 }
 
 function uap_make_inputh_string(divCheck, showValue, hidden_input_id){
@@ -468,16 +473,16 @@ function uap_affiliate_username_test(v){
         },
         success: function (r) {
 			if (r==1){
-				jQuery('#uap_affiliate_username_text').after('<div class="uap-username-not-exists">Username that You write is not affiliate!</div>');		
-			} 
+				jQuery('#uap_affiliate_username_text').after('<div class="uap-username-not-exists">Username that You write is not affiliate!</div>');
+			}
         }
-   	});	 	
+   	});
 }
 
 function uap_check_login_field(t, e){
 	var n = jQuery('#notice_' + t);
 	n.fadeOut(500, function(){
-		n.remove();	
+		n.remove();
 	});
 	var target = jQuery('#uap_login_form [name='+t+']').parent();
 	var v = jQuery('#uap_login_form [name='+t+']').val();
@@ -500,7 +505,7 @@ function uap_stripe_v2_update_fields(){
 		} else if (country==temp_country){
 			if (user_type==temp_type || temp_type=='all'){
 				jQuery(this).css('display', 'block');
-			}			
+			}
 		} else if (user_type==temp_type){
 			if (country==temp_country || temp_country=='all'){
 				jQuery(this).css('display', 'block');

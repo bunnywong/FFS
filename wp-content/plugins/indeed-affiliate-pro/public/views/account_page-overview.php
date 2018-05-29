@@ -4,7 +4,7 @@
 <?php endif;?>
 <?php if (!empty($data['stats'])):?>
 <div class="uap-row">
-		<div class="uapcol-md-4">
+		<div class="uapcol-md-4 uap-account-overview-tab1">
 			<div class="uap-account-no-box" style="padding-left:0px;">
 			 <div class="uap-account-no-box-inside">
 			  	<div class="uap-count"> <?php echo $data['stats']['referrals']; ?> </div>
@@ -12,7 +12,7 @@
 			 </div>
 			</div>
 		</div>
-		<div class="uapcol-md-4">
+		<div class="uapcol-md-4 uap-account-overview-tab2">
 			<div class="uap-account-no-box" style="padding-left:0px;">
 			 <div class="uap-account-no-box-inside">
 			  	<div class="uap-count"> <?php echo $data['stats']['paid_referrals_count']; ?> </div>
@@ -20,7 +20,7 @@
 			 </div>
 			</div>
 		</div>
-		<div class="uapcol-md-4">
+		<div class="uapcol-md-4 uap-account-overview-tab3">
 			<div class="uap-account-no-box" style="padding-left:0px;">
 			 <div class="uap-account-no-box-inside">
 			  	<div class="uap-count"> <?php echo $data['stats']['unpaid_referrals_count']; ?> </div>
@@ -28,8 +28,8 @@
 			 </div>
 			</div>
 		</div>
-		<div class="uapcol-md-4">
-			<div class="uap-account-no-box uap-account-box-blue" style="padding-left:0px;">
+		<div class="uapcol-md-4 uap-account-overview-tab4">
+			<div class="uap-account-no-box uap-account-box-blue " style="padding-left:0px;">
 			 <div class="uap-account-no-box-inside">
 			  	<div class="uap-count"> <?php echo $data['stats']['payments']; ?> </div>
 				<div class="uap-detail"><?php echo __('Total Transactions', 'uap'); ?></div>
@@ -38,7 +38,7 @@
 		</div>
 </div>
 <div class="uap-row">
-	<div class="uapcol-md-2">
+	<div class="uapcol-md-2 uap-account-overview-tab5">
 			<div class="uap-account-no-box uap-account-box-green">
 			 <div class="uap-account-no-box-inside">
 			  	<div class="uap-count"> <?php echo uap_format_price_and_currency($data['stats']['currency'], round($data['stats']['paid_payments_value'], 2));?> </div>
@@ -46,7 +46,7 @@
 			 </div>
 			</div>
 		</div>
-		<div class="uapcol-md-2">
+		<div class="uapcol-md-2 uap-account-overview-tab6">
 			<div class="uap-account-no-box uap-account-box-red">
 			 <div class="uap-account-no-box-inside">
 			  	<div class="uap-count"> <?php echo uap_format_price_and_currency($data['stats']['currency'], round($data['stats']['unpaid_payments_value'], 2));?> </div>

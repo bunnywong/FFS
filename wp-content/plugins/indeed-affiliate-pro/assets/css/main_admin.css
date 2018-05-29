@@ -2297,3 +2297,6 @@ i.mce-i-uap_btn_forms:after{
 #uap_reorder_menu_items tbody tr {
     cursor: move;
 }
+.uap-affiliate-list-counts{
+	font-size:11px !important;
+}

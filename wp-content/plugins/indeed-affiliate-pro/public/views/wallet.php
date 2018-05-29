@@ -9,7 +9,7 @@
 
 <div class="uap-row">
 
-	<div class="uapcol-md-2">
+	<div class="uapcol-md-2 uap-account-wallet-tab1">
 		<div class="uap-account-no-box uap-account-box-blue">
 			<div class="uap-account-no-box-inside">
 				<div class="uap-count"> <?php echo uap_format_price_and_currency($data['currency'], round(@$data['stats']['wallet'], 2) ); ?> </div>
@@ -18,7 +18,7 @@
 		</div>
 	</div>
 
-	<div class="uapcol-md-2">
+	<div class="uapcol-md-2 uap-account-wallet-tab2">
 		<div class="uap-account-no-box uap-account-box-green">
 			<div class="uap-account-no-box-inside">
 				<div class="uap-count"> <?php echo uap_format_price_and_currency($data['currency'], round($data['stats']['unpaid_payments_value'], 2));?> </div>

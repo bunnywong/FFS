@@ -1,24 +1,25 @@
 <div class="uap-wrapper">
 			<form action="" method="post">
-				
+
 				<div class="uap-stuffbox">
 					<h3 class="uap-h3"><?php _e('Opt-In Settings', 'uap');?></h3>
 					<div class="inside">
-						<div class="uap-form-line">		
-							<h4><?php _e('Enable Opt-In', 'uap');?></h4>							
+						<div class="uap-form-line">
+							<h4><?php _e('Enable Opt-In', 'uap');?></h4>
 							<label class="uap_label_shiwtch" style="margin:10px 0 10px -10px;">
 								<?php $checked = ($data['metas']['uap_register_opt-in']) ? 'checked' : '';?>
 								<input type="checkbox" class="uap-switch" onClick="uap_check_and_h(this, '#uap_register_opt-in');" <?php echo $checked;?> />
 								<div class="switch" style="display:inline-block;"></div>
 							</label>
-							<input type="hidden" name="uap_register_opt-in" value="<?php echo $data['metas']['uap_register_opt-in'];?>" id="uap_register_opt-in" /> 	
-						</div>		
-						<div class="uap-form-line">	
+							<input type="hidden" name="uap_register_opt-in" value="<?php echo $data['metas']['uap_register_opt-in'];?>" id="uap_register_opt-in" />
+						</div>
+						<div class="uap-form-line">
 								<h4><?php _e('Opt-In Destination:', 'uap');?></h4>
 			                	<select name="uap_register_opt-in-type">
 			                    	    <?php
 			                        	    $subscribe_types = array(
 			                                                                    'aweber' => 'AWeber',
+																																					'active_campaign' => 'Active Campaign',
 			                                                                    'campaign_monitor' => 'CampaignMonitor',
 			                                                                    'constant_contact' => 'Constant Contact',
 			                                                                    'email_list' => __('E-mail List', 'uap'),
@@ -32,24 +33,24 @@
 			                                foreach ($subscribe_types as $k=>$v){
 			                                    $selected = ($data['metas']['uap_register_opt-in-type']==$k) ? 'selected' : '';
 			                                    ?>
-			                                    <option value="<?php echo $k;?>" <?php echo $selected;?> ><?php 
+			                                    <option value="<?php echo $k;?>" <?php echo $selected;?> ><?php
 			                            	     	echo $v;
 			                                    ?></option>
 			                                    <?php
 			                                }
 			                                ?>
 			                    </select>
-						</div>					
+						</div>
 						<div><?php _e('During the registration process, the affiliate email address is sent to your OptIn destination.', 'uap');?></div>
 						<div style="margin-top: 15px;">
 							<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
 						</div>
 					</div>
-				</div>					
+				</div>
 
 				<div class="uap-stuffbox">
 					<h3 class="uap-h3">Active Campaign</h3>
-					<div class="inside">	
+					<div class="inside">
 					    <table id="active_campaign_table">
 					      <tbody>
 					        <tr>
@@ -75,26 +76,26 @@
 					          <td>
 					            <input type="text" value="<?php echo $data['metas']['uap_active_campaign_listId'];?>" name="uap_active_campaign_listId" style="min-width: 260px;">
 					          </td>
-					        </tr>					        
+					        </tr>
 					      </tbody>
 					    </table>
 						<div style="margin-top: 15px;">
 							<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-						</div>					    
-					</div>
-				</div>	
-			
-				<div class="uap-stuffbox">
-					<h3 class="uap-h3"><?php _e('Additional Main E-Mail', 'uap');?></h3>
-					<div class="inside">	
-						<input type="text" name="uap_main_email" value="<?php echo $data['metas']['uap_main_email'];?>" style="min-width: 300px;" />
-						<div style="margin-top: 15px;">
-							<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-						</div>		
+						</div>
 					</div>
 				</div>
 
-				
+				<div class="uap-stuffbox">
+					<h3 class="uap-h3"><?php _e('Additional Main E-Mail', 'uap');?></h3>
+					<div class="inside">
+						<input type="text" name="uap_main_email" value="<?php echo $data['metas']['uap_main_email'];?>" style="min-width: 300px;" />
+						<div style="margin-top: 15px;">
+							<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
+						</div>
+					</div>
+				</div>
+
+
 				<div class="uap-stuffbox">
 					<h3 class="uap-h3">Aweber</h3>
 					<div class="inside">
@@ -105,7 +106,7 @@
 					            <?php _e('Auth Code', 'uap');?>
 					          </td>
 					          <td>
-					            <textarea id="uap_aweber_auth_code" name="uap_aweber_auth_code" style="min-width: 375px;"><?php 
+					            <textarea id="uap_aweber_auth_code" name="uap_aweber_auth_code" style="min-width: 375px;"><?php
 					            	echo $data['metas']['uap_aweber_auth_code'];
 					            ?></textarea>
 					          </td>
@@ -149,13 +150,13 @@
 					    </table>
 					    <div style="margin-top: 15px;">
 							<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-						</div>	
+						</div>
 					</div>
-				</div>				
-				
+				</div>
+
 				<div class="uap-stuffbox">
 					<h3 class="uap-h3">Mailchimp</h3>
-					<div class="inside">	
+					<div class="inside">
 					    <table>
 					      <tbody>
 					        <tr>
@@ -193,16 +194,16 @@
 					          </td>
 					        </tr>
 					      </tbody>
-					    </table>	
+					    </table>
 					    <div style="margin-top: 15px;">
 							<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-						</div>					
+						</div>
 					</div>
 				</div>
-				
+
 				<div class="uap-stuffbox">
 					<h3 class="uap-h3">Get Response</h3>
-					<div class="inside">	
+					<div class="inside">
 					    <table>
 					      <tbody>
 					        <tr>
@@ -243,13 +244,13 @@
 					    </table>
 					    <div style="margin-top: 15px;">
 							<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-						</div>						    					
+						</div>
 					</div>
-				</div>		
-				
+				</div>
+
 				<div class="uap-stuffbox">
 					<h3 class="uap-h3">Campaign Monitor</h3>
-					<div class="inside">	
+					<div class="inside">
 					    <table>
 					      <tbody>
 					        <tr>
@@ -287,16 +288,16 @@
 					          </td>
 					        </tr>
 					      </tbody>
-					    </table>	
+					    </table>
 					    <div style="margin-top: 15px;">
 							<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-						</div>						    				
+						</div>
 					</div>
-				</div>	
-				
+				</div>
+
 				<div class="uap-stuffbox">
 					<h3 class="uap-h3">IContact</h3>
-					<div class="inside">	
+					<div class="inside">
 					    <table>
 					      <tbody>
 					        <tr>
@@ -355,20 +356,20 @@
 					                ID_LIST
 					              </b>
 					              /?token=f155cba025333b071d49974c96ae0894 )
-					            </div>					            
+					            </div>
 					          </td>
 					        </tr>
 					      </tbody>
 					    </table>
 					    <div style="margin-top: 15px;">
 							<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-						</div>						    
+						</div>
 					</div>
-				</div>				
-				
+				</div>
+
 			<div class="uap-stuffbox">
 				<h3 class="uap-h3">Constant Contact</h3>
-				<div class="inside">	
+				<div class="inside">
 				    <table>
 				      <tbody>
 				        <tr>
@@ -402,7 +403,7 @@
 				          </td>
 				          <td>
 				            <select id="uap_cc_list" name="uap_cc_list" style="min-width: 260px;">
-				            	<?php 
+				            	<?php
 				            		$list_name = '';
 				            		if (isset($data['metas']['uap_cc_list']) && $data['metas']['uap_cc_list']){
 				            			//getting list name by id
@@ -417,16 +418,16 @@
 				          </td>
 				        </tr>
 				      </tbody>
-				    </table>	
+				    </table>
 					<div style="margin-top: 15px;">
 						<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-					</div>					    			
-				</div>	
-			</div>	
-			
+					</div>
+				</div>
+			</div>
+
 			<div class="uap-stuffbox">
 				<h3 class="uap-h3">Wysija Contact</h3>
-				<div class="inside">	
+				<div class="inside">
 				    <table>
 				      <tbody>
 				        <tr>
@@ -458,13 +459,13 @@
 				    </table>
 					<div style="margin-top: 15px;">
 						<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-					</div>					    
+					</div>
 				</div>
-			</div>	
-			
+			</div>
+
 			<div class="uap-stuffbox">
 				<h3 class="uap-h3">Mailster (MyMail)</h3>
-				<div class="inside">	
+				<div class="inside">
 				    <table>
 				      <tbody>
 				        <tr>
@@ -472,7 +473,7 @@
 				            <?php _e('Select MyMail List:', 'uap');?>
 				          </td>
 				          <td>
-							<?php 
+							<?php
 		                    	$mymailList = $obj->indeed_getMyMailLists();
 		                        if ($mymailList){
 		                        	?>
@@ -496,13 +497,13 @@
 				    </table>
 					<div style="margin-top: 15px;">
 						<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-					</div>					    
+					</div>
 				</div>
-			</div>												
+			</div>
 
 			<div class="uap-stuffbox">
 				<h3 class="uap-h3">Mad Mimi</h3>
-				<div class="inside">	
+				<div class="inside">
 				    <table>
 				      <tbody>
 				        <tr>
@@ -533,17 +534,17 @@
 				    </table>
 					<div style="margin-top: 15px;">
 						<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large" />
-					</div>					    
+					</div>
 				</div>
-			</div>			
-			
+			</div>
+
 			<div class="uap-stuffbox">
 				<h3 class="uap-h3"><?php _e('Saved E-mail List', 'uap');?></h3>
-				<div class="inside">	
-				    <textarea disabled style="width: 450px;height: 100px;"><?php 
+				<div class="inside">
+				    <textarea disabled style="width: 450px;height: 100px;"><?php
 				    	echo $data['metas']['uap_email_list'];
-				    ?></textarea>		
+				    ?></textarea>
 				</div>
-			</div>		
+			</div>
 		</form>
-</div>		
+</div>

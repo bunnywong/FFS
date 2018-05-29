@@ -64,7 +64,7 @@
 				  <div class="uap-stuffbox">
 						<h3 class="uap-h3"><?php _e('Custom CSS', 'uap');?></h3>
 						<div class="inside">			
-							<textarea id="uap_login_custom_css" name="uap_login_custom_css" onBlur="uap_login_preview();" class="uap-dashboard-textarea"><?php echo $data['metas']['uap_login_custom_css'];?></textarea>
+							<textarea id="uap_login_custom_css" name="uap_login_custom_css" onBlur="uap_login_preview();" class="uap-dashboard-textarea"><?php echo stripslashes($data['metas']['uap_login_custom_css']);?></textarea>
 							<div class="uap-wrapp-submit-bttn">
 								<input type="submit" value="<?php _e('Save', 'uap');?>" name="save" class="button button-primary button-large" />
 							</div>	

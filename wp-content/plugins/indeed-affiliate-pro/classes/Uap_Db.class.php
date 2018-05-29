@@ -643,7 +643,8 @@ if (!class_exists('Uap_Db')){
 				//get banner from db
 				global $wpdb;
 				$table = $wpdb->prefix . "uap_banners";
-				$data = $wpdb->get_row("SELECT * FROM $table WHERE id='" . $id . "';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $id);
+				$data = $wpdb->get_row($q);
 				$array = (array)$data;
 				$array['description'] = stripslashes($array['description']);
 				return $array;
@@ -673,22 +674,28 @@ if (!class_exists('Uap_Db')){
 				global $wpdb;
 				$table = $wpdb->prefix . "uap_banners";
 				if (!empty($post_data['id'])){
-					$data = $wpdb->get_row("SELECT * FROM $table WHERE id='" . $post_data['id'] . "';");
+					$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $post_data['id']);
+					$data = $wpdb->get_row($q);
 					if (!empty($data)){
 						/// UPDATE
-						$wpdb->query("UPDATE $table SET
-												name = '" . $post_data['name'] . "',
-												description = '" . $post_data['description'] . "',
-												url = '" . $post_data['url'] . "',
-												image = '" . $post_data['image'] . "',
-												status = '" . $post_data['status'] .  "'
-										WHERE id='" . $post_data['id'] . "'
-								;");
+						$q = $wpdb->prepare("UPDATE $table SET
+												name=%s,
+												description=%s,
+												url=%s,
+												image=%s,
+												status=%s
+										WHERE id=%d
+						;", $post_data['name'], stripslashes_deep($post_data['description']), $post_data['url'], $post_data['image'], $post_data['status'], $post_data['id']);
+						$wpdb->query($q);
 						return;
 					}
 				}
 				/// SAVE
-				$wpdb->query("INSERT INTO $table  VALUES(NULL, '" . $post_data['name'] . "', '" . $post_data['description'] . "', '" . $post_data['url'] . "', '" . $post_data['image'] . "', '" . $post_data['status'] .  "', NOW());");
+				$q = $wpdb->prepare("INSERT INTO $table VALUES(NULL,
+																											%s, %s, %s, %s, %s, NOW());",
+							$post_data['name'], $post_data['description'], $post_data['url'], $post_data['image'], $post_data['status']
+				);
+				$wpdb->query($q);
 			}
 		}
 
@@ -704,7 +711,8 @@ if (!class_exists('Uap_Db')){
 					$post_data['delete_banner'] = array($post_data['delete_banner']);
 				}
 				foreach ($post_data['delete_banner'] as $id){
-					$wpdb->query("DELETE FROM $table WHERE id='" . $id . "'");
+					$q = $wpdb->prepare("DELETE FROM $table WHERE id=%d ", $id);
+					$wpdb->query($q);
 				}
 			}
 		}
@@ -769,12 +777,13 @@ if (!class_exists('Uap_Db')){
 			 */
 			if ($affiliate_id){
 				global $wpdb;
-				$data = $wpdb->get_row("SELECT u.user_login
+				$q = $wpdb->prepare("SELECT u.user_login
 											FROM " . $wpdb->prefix . "uap_affiliates uap
 											INNER JOIN " . $wpdb->base_prefix . "users u
 											ON uap.uid=u.ID
-											WHERE uap.id='" . $affiliate_id . "';
-				");
+											WHERE uap.id=%d;
+				", $affiliate_id);
+				$data = $wpdb->get_row($q);
 				if (!empty($data->user_login)){
 					return $data->user_login;
 				}
@@ -843,6 +852,7 @@ if (!class_exists('Uap_Db')){
 			 */
 			 if ($id){
 			 	global $wpdb;
+				$id = esc_sql($id);
 				$wpdb->query("DELETE FROM " . $wpdb->prefix . "uap_affiliates WHERE id='" . $id . "';");
 				$wpdb->query("DELETE FROM " . $wpdb->prefix . "uap_affiliate_referral_users_relations WHERE affiliate_id='$id' ");
 				$wpdb->query("DELETE FROM " . $wpdb->prefix . "uap_campaigns WHERE affiliate_id='$id' ");
@@ -882,7 +892,8 @@ if (!class_exists('Uap_Db')){
 			 if ($uid){
 			 	global $wpdb;
 			 	$table = $wpdb->prefix . 'uap_affiliates';
-			 	$data = $wpdb->get_row("SELECT id FROM $table WHERE uid=$uid;");
+				$q = $wpdb->prepare("SELECT id FROM $table WHERE uid=%d", $uid);
+			 	$data = $wpdb->get_row($q);
 				if ($data && !empty($data->id)){
 					return $data->id;
 				}
@@ -898,7 +909,8 @@ if (!class_exists('Uap_Db')){
 			 if ($affiliate_id){
 			 	 global $wpdb;
 				 $table = $wpdb->prefix . 'uap_mlm_relations';
-				 $data = $wpdb->get_row("SELECT id FROM $table WHERE parent_affiliate_id=$affiliate_id;");
+				 $q = $wpdb->prepare("SELECT id FROM $table WHERE parent_affiliate_id=%d ", $affiliate_id);
+				 $data = $wpdb->get_row($q);
 				 if ($data && !empty($data->id)){
 				 	return TRUE;
 				 }
@@ -912,12 +924,12 @@ if (!class_exists('Uap_Db')){
 			 * @return array OR INT
 			 */
 			global $wpdb;
-			$ordertype_rank = (empty($_GET['ordertype_rank'])) ? '' : $_GET['ordertype_rank'];
+			$ordertype_rank = (empty($_GET['ordertype_rank'])) ? '' : esc_sql($_GET['ordertype_rank']);
 
 			$affiliates_table = $wpdb->prefix . 'uap_affiliates';
 			$user_table = $wpdb->base_prefix . 'users';
 			$users_meta_table = $wpdb->base_prefix . 'usermeta';
-			$search_term = isset($_GET['search_t']) ? $_GET['search_t'] : '';
+			$search_term = isset($_GET['search_t']) ? esc_sql($_GET['search_t']) : '';
 
 			if ($count){
 				$q = "SELECT COUNT(distinct u.ID) as c "; //distinct um.user_id
@@ -954,9 +966,13 @@ if (!class_exists('Uap_Db')){
 			} else {
 				$return_arr = array();
 				if ($order_type && $order_by){
+					$order_by = esc_sql($order_by);
+					$order_type = esc_sql($order_type);
 					$q .= " ORDER BY " . $order_by . " " . $order_type;
 				}
 				if ($limit>-1 && $offset>-1){
+					$limit = esc_sql($limit);
+					$offset = esc_sql($offset);
 					$q .= " LIMIT " . $limit . " OFFSET " . $offset;
 				}
 				$data = $wpdb->get_results($q);
@@ -1027,6 +1043,7 @@ if (!class_exists('Uap_Db')){
 												1=1";
 			if ($affiliates_ids_in){
 				$ids = implode(',', $affiliates_ids_in);
+				$ids = esc_sql($ids);
 				if ($ids){
 					$q .= " AND affiliate_id IN ($ids)";
 				}
@@ -1087,12 +1104,26 @@ if (!class_exists('Uap_Db')){
 			 if ($uid){
 			 	 global $wpdb;
 				 $table = $wpdb->prefix . 'uap_affiliates';
-				 $data = $wpdb->get_row("SELECT id FROM $table WHERE uid=$uid");
+				 $q = $wpdb->prepare("SELECT id FROM $table WHERE uid=%d ", $uid);
+				 $data = $wpdb->get_row($q);
 				 if (!empty($data->id)){
 				 	return TRUE;
 				 }
 			 }
 			 return FALSE;
+		}
+
+		public function is_user_an_active_affiliate($uid=0){
+				if ($uid){
+						global $wpdb;
+						$table = $wpdb->prefix . 'uap_affiliates';
+						$q = $wpdb->prepare("SELECT status FROM $table WHERE uid=%d ;", $uid);
+						$data = $wpdb->get_var($q);
+						if ($data){
+								return true;
+						}
+				}
+				return false;
 		}
 
 		public function delete_notification($id=0){
@@ -1103,7 +1134,8 @@ if (!class_exists('Uap_Db')){
 			if (!empty($id)){
 				global $wpdb;
 				$table = $wpdb->prefix . "uap_notifications";
-				$wpdb->query("DELETE FROM $table WHERE id='" . $id . "';");
+				$q = $wpdb->prepare("DELETE FROM $table WHERE id=%d ", $id);
+				$wpdb->query($q);
 			}
 		}
 
@@ -1118,7 +1150,8 @@ if (!class_exists('Uap_Db')){
 				if (!$table){
 					$table = $wpdb->prefix . "uap_notifications";
 				}
-				$data = $wpdb->get_results("SELECT * FROM $table WHERE type='$type';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE type=%d ", $type);
+				$data = $wpdb->get_results($q);
 				if (!empty($data)){
 					return TRUE;
 				}
@@ -1146,7 +1179,8 @@ if (!class_exists('Uap_Db')){
 				//get notf from db
 				global $wpdb;
 				$table = $wpdb->prefix . "uap_notifications";
-				$data = $wpdb->get_row("SELECT * FROM $table WHERE id='" . $id . "';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $id);
+				$data = $wpdb->get_row($q);
 				return (array)$data;
 			} else {
 				//get notf meta list
@@ -1206,24 +1240,38 @@ if (!class_exists('Uap_Db')){
 				if (!isset($post_data['pushover_status'])) $post_data['pushover_status'] = 0;
 
 				if (!empty($post_data['id'])){
-					$data = $wpdb->get_row("SELECT * FROM $table WHERE id='" . $post_data['id'] . "';");
+					$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $post_data['id']);
+					$data = $wpdb->get_row($q);
 					if (!empty($data)){
 						/// UPDATE
-						$wpdb->query("UPDATE $table SET
-											type = '" . $post_data['type'] . "',
-											rank_id = '" . $post_data['rank_id'] . "',
-											subject = '" . $post_data['subject'] . "',
-											message = '" . $post_data['message'] . "',
-											pushover_message = '" . $post_data['pushover_message'] . "',
-											pushover_status = '" . $post_data['pushover_status'] . "',
-											status = '" . $post_data['status'] .  "'
-										WHERE id='" . $post_data['id'] . "'
-								;");
+						$q = $wpdb->prepare("UPDATE $table SET
+											type=%s,
+											rank_id=%s,
+											subject=%s,
+											message=%s,
+											pushover_message=%s,
+											pushover_status=%s,
+											status=%s
+										WHERE id=%d
+						;", $post_data['type'], $post_data['rank_id'], stripslashes_deep($post_data['subject']), stripslashes_deep($post_data['message']),
+						stripslashes_deep($post_data['pushover_message']), $post_data['pushover_status'], $post_data['status'], $post_data['id']);
+						$wpdb->query($q);
 								return;
 					}
 				}
 				/// SAVE
-				$wpdb->query("INSERT INTO $table  VALUES(NULL, '" . $post_data['type'] . "', '" . $post_data['rank_id'] . "', '" . $post_data['subject'] . "', '" . $post_data['message'] . "', '" . $post_data['pushover_message'] . "', '" . $post_data['pushover_status'] . "', '" . $post_data['status'] .  "');");
+				$q = $wpdb->prepare("INSERT INTO $table  VALUES(NULL,
+																												%s,
+																												%s,
+																												%s,
+																												%s,
+																												%s,
+																												%s,
+																												%s);",
+						 $post_data['type'], $post_data['rank_id'], $post_data['subject'], $post_data['message'],
+						 $post_data['pushover_message'], $post_data['pushover_status'], $post_data['status']
+				);
+				$wpdb->query($q);
 			}
 		}
 
@@ -1444,6 +1492,7 @@ if (!class_exists('Uap_Db')){
 					$arr = array(
 							'uap_redirect_without_param' => 1,
 							'uap_referral_variable' => 'ref',
+							'uap_referral_custom_base_link' => '',
 							'uap_campaign_variable' => 'campaign',
 							'uap_default_ref_format' => 'username',
 							'uap_cookie_expire' => 360,//value in days
@@ -1469,6 +1518,13 @@ if (!class_exists('Uap_Db')){
 							'uap_hide_payments_warnings' => 0,
 							'uap_default_payment_system' => 'bt',
 							'uap_disable_bt_payment_system' => 0,
+							'uap_custom_source_name_woo' => 'WooCommerce',
+							'uap_custom_source_name_ump' => 'Ultimate Membership Pro',
+							'uap_custom_source_name_edd' => 'Easy Download Digital',
+							'uap_custom_source_name_bonus' => 'Bonus',
+							'uap_custom_source_name_mlm' => 'MLM',
+							'uap_custom_source_name_landing_commissions' => 'Landing commissions',
+							'uap_custom_source_name_user_signup' => 'User SignUp',
 					);
 					break;
 				case 'general-uploads':
@@ -1841,6 +1897,7 @@ if (!class_exists('Uap_Db')){
 					$arr = array(
 									'uap_wallet_enable' => 0,
 									'uap_wallet_minimum_amount' => '',
+									'uap_wallet_exclude_sources' => '',
 					);
 					break;
 				case 'checkout_select_referral':
@@ -2096,10 +2153,10 @@ if (!class_exists('Uap_Db')){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_ranks';
 				$settings['color'] = (empty($post_data['color'])) ? '' : $post_data['color'];
-				$settings['description'] = (empty($post_data['description'])) ? '' : $post_data['description'];
+				$settings['description'] = (empty($post_data['description'])) ? '' : stripslashes_deep($post_data['description']);
 				$settings['description'] = str_replace("'", '', $settings['description']);
 				$settings['description'] = str_replace('"', '', $settings['description']);
-
+				
 				$settings = serialize($settings);
 
 				/// UPDATE RANK ORDER
@@ -2125,7 +2182,8 @@ if (!class_exists('Uap_Db')){
 							}
 						}
 						if (isset($swap_id) && isset($old_order)){
-							$wpdb->query("UPDATE $table SET rank_order='$old_order' WHERE id='$swap_id';");
+							$q = $wpdb->prepare("UPDATE $table SET rank_order='$old_order' WHERE id=%s ", $swap_id);
+							$wpdb->query($q);
 						}
 					}
 				}
@@ -2143,29 +2201,36 @@ if (!class_exists('Uap_Db')){
 				}
 
 				if (!empty($post_data['id'])){
-					$exists = $wpdb->get_row("SELECT * FROM $table WHERE id='" . $post_data['id'] . "';");
+					$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d", $post_data['id']);
+					$exists = $wpdb->get_row($q);
 					if ($exists){
 						//update
-						$wpdb->query("UPDATE $table SET
-											slug='" . $post_data['slug'] . "',
-											label='" . $post_data['label'] . "',
-											amount_type='" . $post_data['amount_type'] . "',
-											amount_value='" . $post_data['amount_value'] . "',
-											bonus='" . $post_data['bonus'] . "',
-											sign_up_amount_value='" . $post_data['sign_up_amount_value'] . "',
-											lifetime_amount_type='" . $post_data['lifetime_amount_type'] . "',
-											lifetime_amount_value='" . $post_data['lifetime_amount_value'] . "',
-											reccuring_amount_type='" . $post_data['reccuring_amount_type'] . "',
-											reccuring_amount_value='" . $post_data['reccuring_amount_value'] . "',
-											mlm_amount_type='" . serialize($post_data['mlm_amount_type']) . "',
-											mlm_amount_value='" . serialize($post_data['mlm_amount_value']) . "',
-											achieve='" . $post_data['achieve'] . "',
-											rank_order='" . $post_data['rank_order'] . "',
-											status='" . $post_data['status'] . "',
-											settings='" . $settings . "',
-											rank_order='" . $post_data['rank_order'] . "'
-											WHERE id='" . $post_data['id'] . "'
-						;");
+						$q = $wpdb->prepare("UPDATE $table SET
+											slug=%s,
+											label=%s,
+											amount_type=%s,
+											amount_value=%s,
+											bonus=%s,
+											sign_up_amount_value=%s,
+											lifetime_amount_type=%s,
+											lifetime_amount_value=%s,
+											reccuring_amount_type=%s,
+											reccuring_amount_value=%s,
+											mlm_amount_type=%s,
+											mlm_amount_value=%s,
+											achieve=%s,
+											rank_order=%s,
+											status=%s,
+											settings=%s,
+											rank_order=%s
+											WHERE id=%s
+						;", $post_data['slug'], $post_data['label'], $post_data['amount_type'], $post_data['amount_value'],
+						$post_data['bonus'], $post_data['sign_up_amount_value'], $post_data['lifetime_amount_type'],
+						$post_data['lifetime_amount_value'], $post_data['reccuring_amount_type'], $post_data['reccuring_amount_value'],
+						serialize($post_data['mlm_amount_type']), serialize($post_data['mlm_amount_value']), stripslashes_deep($post_data['achieve']),
+						$post_data['rank_order'], $post_data['status'], $settings, $post_data['rank_order'], $post_data['id']
+						);
+						$wpdb->query($q);
 						return;
 					}
 				}
@@ -2176,24 +2241,29 @@ if (!class_exists('Uap_Db')){
 						return;
 					}
 
-					$wpdb->query("INSERT INTO $table VALUES(NULL,
-									'" . $post_data['slug'] . "',
-									'" . $post_data['label'] . "',
-									'" . $post_data['amount_type'] . "',
-									'" . $post_data['amount_value'] . "',
-									'" . $post_data['bonus'] . "',
-									'" . $post_data['sign_up_amount_value'] . "',
-									'" . $post_data['lifetime_amount_type'] . "',
-									'" . $post_data['lifetime_amount_value'] . "',
-									'" . $post_data['reccuring_amount_type'] . "',
-									'" . $post_data['reccuring_amount_value'] . "',
-									'" . serialize($post_data['mlm_amount_type']) . "',
-									'" . serialize($post_data['mlm_amount_value']) . "',
-									'" . $post_data['achieve'] . "',
-									'" . $settings . "',
-									'" . $post_data['rank_order'] . "',
-									'" . $post_data['status'] . "')
-					;");
+					$q = $wpdb->prepare("INSERT INTO $table VALUES(NULL,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s,
+									%s)
+					;", $post_data['slug'], $post_data['label'], $post_data['amount_type'], $post_data['amount_value'],
+					$post_data['bonus'], $post_data['sign_up_amount_value'], $post_data['lifetime_amount_type'], $post_data['lifetime_amount_value'],
+					$post_data['reccuring_amount_type'], $post_data['reccuring_amount_value'], serialize($post_data['mlm_amount_type']),
+					serialize($post_data['mlm_amount_value']), $post_data['achieve'], $settings, $post_data['rank_order'], $post_data['status']
+					);
+					$wpdb->query($q);
 			}
 		}
 
@@ -2253,7 +2323,8 @@ if (!class_exists('Uap_Db')){
 			if ($id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_ranks';
-				$data = $wpdb->get_results("DELETE FROM $table WHERE id='" . $id . "'; ");
+				$q = $wpdb->prepare("DELETE FROM $table WHERE id=%d ", $id);
+				$data = $wpdb->get_results($q);
 			}
 		}
 
@@ -2356,9 +2427,11 @@ if (!class_exists('Uap_Db')){
 			if ($id && $rank_id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_affiliates';
-				$exists = $wpdb->get_row("SELECT rank_id FROM $table WHERE id='" . $id . "';");
+				$q = $wpdb->prepare("SELECT rank_id FROM $table WHERE id=%d ", $id);
+				$exists = $wpdb->get_row($q);
 				if (isset($exists->rank_id) && $exists->rank_id!=$rank_id){
-					$wpdb->query("UPDATE $table SET rank_id='" . $rank_id . "' WHERE id='" . $id . "' ");
+					$q = $wpdb->prepare("UPDATE $table SET rank_id=%d WHERE id=%d ", $rank_id, $id);
+					$wpdb->query($q);
 
 					///rank history
 					$this->add_new_rank_to_history($id, $exists->rank_id, $rank_id);
@@ -2418,13 +2491,16 @@ if (!class_exists('Uap_Db')){
 					WHERE 1=1
 			";
 			if (!empty($search)){
+				$search = esc_sql($search);
 				$q .= " AND c.user_login LIKE '%$search%'";
 			}
 			if ($affiliate_id){
+				$affiliate_id = esc_sql($affiliate_id);
 				$q .= " AND a.affiliate_id=$affiliate_id";
 			}
 			$q .= " ORDER BY a.add_date DESC";
 			if ($limit>-1){
+				$limit = esc_sql($limit);
 				$q .= " LIMIT $limit";
 			}
 			$data = $wpdb->get_results($q);
@@ -2494,8 +2570,10 @@ if (!class_exists('Uap_Db')){
 			$table = $wpdb->prefix . 'uap_affiliates';
 			$q = "SELECT rank_id FROM $table WHERE ";
 			if ($id){
+				$id = esc_sql($id);
 				$q .= "id='$id' ";
 			} else {
+				$uid = esc_sql($uid);
 				$q .= "uid='$uid' ";
 			}
 			$data = $wpdb->get_row($q);
@@ -2542,9 +2620,13 @@ if (!class_exists('Uap_Db')){
 				}
 
 				if ($order_type && $order_by){
+					$order_by = esc_sql($order_by);
+					$order_type = esc_sql($order_type);
 					$q .= " ORDER BY " . $order_by . " " . $order_type;
 				}
 				if ($limit>-1 && $offset>-1){
+					$limit = esc_sql($limit);
+					$offset = esc_sql($offset);
 					$q .= " LIMIT " . $limit . " OFFSET " . $offset;
 				}
 
@@ -2572,7 +2654,8 @@ if (!class_exists('Uap_Db')){
 					$post_data['delete_banner'] = array($delete_arr);
 				}
 				foreach ($delete_arr as $id){
-					$wpdb->query("DELETE FROM $db_name WHERE id='" . $id . "'");
+						$q = $wpdb->prepare("DELETE FROM $db_name WHERE id=%d ", $id);
+						$wpdb->query($q);
 				}
 			}
 		}
@@ -2607,10 +2690,10 @@ if (!class_exists('Uap_Db')){
 						$unique++;
 					}
 					$visits++;
-					$wpdb->query("UPDATE $campaign_table
-										SET visit_count='$visits', unique_visits_count='$unique'
-										WHERE id='{$temp_data->id}';
-					");
+					$q = $wpdb->prepare("UPDATE $campaign_table
+																	SET visit_count=%s, unique_visits_count=%s
+																	WHERE id=%d;", $visits, $unique, $temp_data->id);
+					$wpdb->query($q);
 				}
 			}
 
@@ -2630,7 +2713,7 @@ if (!class_exists('Uap_Db')){
 				global $wpdb;
 				$table = $wpdb->prefix . "uap_campaigns";
 				if ($only_counts){
-					$q = "SELECT COUNT(id) as c FROM $table WHERE affiliate_id='$id' ";
+					$q = $wpdb->prepare("SELECT COUNT(id) as c FROM $table WHERE affiliate_id=%d ", $id);
 					if (!empty($where_conditions)){
 						foreach ($where_conditions as $condition){
 							$q .= " AND " . $condition ;
@@ -2643,6 +2726,7 @@ if (!class_exists('Uap_Db')){
 				} else {
 					$q = "SELECT * FROM $table";
 					$q .= " WHERE 1=1 ";
+					$id = esc_sql($id);
 					$q .= " AND affiliate_id='$id'";
 					if (!empty($where_conditions)){
 						foreach ($where_conditions as $condition){
@@ -2650,9 +2734,13 @@ if (!class_exists('Uap_Db')){
 						}
 					}
 					if ($order_type && $order_by){
+						$order_by = esc_sql($order_by);
+						$order_type = esc_sql($order_type);
 						$q .= " ORDER BY " . $order_by . " " . $order_type;
 					}
 					if ($limit>-1 && $offset>-1){
+						$limit = esc_sql($limit);
+						$offset = esc_sql($offset);
 						$q .= " LIMIT " . $limit . " OFFSET " . $offset;
 					}
 					$data = $wpdb->get_results($q);
@@ -2711,9 +2799,13 @@ if (!class_exists('Uap_Db')){
 					}
 				}
 				if ($order_type && $order_by){
+					$order_by = esc_sql($order_by);
+					$order_type = esc_sql($order_type);
 					$q .= " ORDER BY " . $order_by . " " . $order_type;
 				}
 				if ($limit>-1 && $offset>-1){
+					$limit = esc_sql($limit);
+					$offset = esc_sql($offset);
 					$q .= " LIMIT " . $limit . " OFFSET " . $offset;
 				}
 				$data = $wpdb->get_results($q);
@@ -2746,7 +2838,14 @@ if (!class_exists('Uap_Db')){
 				 global $wpdb;
 				 $table = $wpdb->prefix . "uap_referrals";
 				 /// referrals total amount
-				 $q = "SELECT SUM(amount) as result, COUNT(id) as count_referrals FROM $table WHERE affiliate_id='$affiliate_id' AND date>'$start_time' AND date<'$end_time';";
+				 $q = $wpdb->prepare("SELECT SUM(amount) as result,
+				 														 COUNT(id) as count_referrals
+																		 FROM $table
+																		 WHERE affiliate_id=%d
+																		 AND date>%s
+																		 AND date<%s ",
+															$affiliate_id, $start_time, $end_time
+				 );
 				 $temp = $wpdb->get_row($q);
 				 if ($temp && isset($temp->result)){
 				 	$array['total_earnings'] = $temp->result;
@@ -2754,24 +2853,35 @@ if (!class_exists('Uap_Db')){
 				 if ($temp && isset($temp->count_referrals)){
 				 	$array['total_referrals'] = $temp->count_referrals;
 				 }
-				 $q = "SELECT COUNT(id) as count_referrals FROM $table WHERE affiliate_id='$affiliate_id' AND date>'$start_time' AND date<'$end_time' AND status=0;";
+				 $q = $wpdb->prepare("SELECT COUNT(id) as count_referrals
+				 													FROM $table
+																	WHERE affiliate_id=%d
+																	AND date>%s
+																	AND date<%s
+																	AND status=0;", $affiliate_id, $start_time, $end_time);
 				 $temp = $wpdb->get_row($q);
 				 if ($temp && isset($temp->count_referrals)){
 				 	$array['refuse_referrals'] = $temp->count_referrals;
 				 }
-				 $q = "SELECT COUNT(id) as count_referrals FROM $table WHERE affiliate_id='$affiliate_id' AND date>'$start_time' AND date<'$end_time' AND status=1;";
+				 $q = $wpdb->prepare("SELECT COUNT(id) as count_referrals
+				 													FROM $table
+																	WHERE affiliate_id=%d
+																	AND date>%s
+																	AND date<%s
+																	AND status=1;", $affiliate_id, $start_time, $end_time);
 				 $temp = $wpdb->get_row($q);
 				 if ($temp && isset($temp->count_referrals)){
 				 	$array['unverified_referrals'] = $temp->count_referrals;
 				 }
-				 $q = "SELECT COUNT(id) as count_referrals FROM $table WHERE affiliate_id='$affiliate_id' AND date>'$start_time' AND date<'$end_time' AND status=2;";
+				 $q = $wpdb->prepare("SELECT COUNT(id) as count_referrals FROM $table WHERE affiliate_id=%d AND date>%s AND date<%s AND status=2;",
+				 													$affiliate_id, $start_time, $end_time);
 				 $temp = $wpdb->get_row($q);
 				 if ($temp && isset($temp->count_referrals)){
 				 	$array['verified_referrals'] = $temp->count_referrals;
 				 }
 
 				 $table = $wpdb->base_prefix . 'uap_visits';
-				 $q = "SELECT COUNT(id) as visits FROM $table WHERE affiliate_id='$affiliate_id' AND visit_date>'$start_time' AND visit_date<'$end_time';";
+				 $q = $wpdb->prepare("SELECT COUNT(id) as visits FROM $table WHERE affiliate_id=%d AND visit_date>%s AND visit_date<%s;", $affiliate_id, $start_time, $end_time);
 				 $temp = $wpdb->get_row($q);
 				 if ($temp && isset($temp->visits)){
 				 	$array['visits'] = $temp->visits;
@@ -2788,7 +2898,8 @@ if (!class_exists('Uap_Db')){
 			if ($id){
 				global $wpdb;
 				$table = $wpdb->prefix . "uap_referrals";
-				$data = $wpdb->get_row("SELECT * FROM $table WHERE id='" . $id . "';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $id);
+				$data = $wpdb->get_row($q);
 				if ($data){
 					return (array)$data;
 				}
@@ -2879,7 +2990,8 @@ if (!class_exists('Uap_Db')){
 
 				 /// UPDATE VISITS TABLE
 				 if (!empty($post_data['visit_id'])){
-				 	$wpdb->query("UPDATE $table_b SET referral_id='$referral_id' WHERE id='" . $post_data['visit_id'] . "' ");
+					 	$q = $wpdb->prepare("UPDATE $table_b SET referral_id='$referral_id' WHERE id=%d ", $post_data['visit_id']);
+						$wpdb->query($q);
 				 }
 				 return TRUE;
 			 }
@@ -2915,51 +3027,63 @@ if (!class_exists('Uap_Db')){
 				////// MAX AMOUNT
 
 				if (!empty($post_data['id'])){
-					$data = $wpdb->get_row("SELECT * FROM $table WHERE id='" . $post_data['id'] . "';");
+					$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $post_data['id']);
+					$data = $wpdb->get_row($q);
 					if (!empty($data)){
-						$post_data = apply_filters('uap_update_referral_filter', $post_data);
-						/// UPDATE
-						$wpdb->query("UPDATE $table SET
-											refferal_wp_uid='" . $post_data['refferal_wp_uid'] . "',
-											campaign='" . $post_data['campaign'] . "',
-											affiliate_id = '" . $post_data['affiliate_id'] . "',
-											visit_id = '" . $post_data['visit_id'] . "',
-											description = '" . $post_data['description'] . "',
-											source = '" . $post_data['source'] . "',
-											reference = '" . $post_data['reference'] . "',
-											reference_details = '" . $post_data['reference_details'] .  "',
-											parent_referral_id = '" . $post_data['parent_referral_id'] .  "',
-											child_referral_id = '" . $post_data['child_referral_id'] .  "',
-											amount = '" . $post_data['amount'] .  "',
-											currency = '" . $post_data['currency'] .  "',
-											date = '" . $post_data['date'] .  "',
-											status = '" . $post_data['status'] .  "',
-											payment = '" . $post_data['payment'] .  "'
-										WHERE id='" . $post_data['id'] . "'
-								;");
+								$post_data = apply_filters('uap_update_referral_filter', $post_data);
+								/// UPDATE
+								$q = $wpdb->prepare("UPDATE $table SET
+													refferal_wp_uid=%d,
+													campaign=%s,
+													affiliate_id=%d,
+													visit_id=%d,
+													description=%s,
+													source=%s,
+													reference=%s,
+													reference_details=%s,
+													parent_referral_id=%d,
+													child_referral_id=%d,
+													amount=%s,
+													currency=%s,
+													date=%s,
+													status=%s,
+													payment=%s
+												WHERE id=%d
+								;", $post_data['refferal_wp_uid'], $post_data['campaign'], $post_data['affiliate_id'],
+										$post_data['visit_id'], $post_data['description'], $post_data['source'], $post_data['reference'],
+										$post_data['reference_details'], $post_data['parent_referral_id'], $post_data['child_referral_id'],
+										$post_data['amount'], $post_data['currency'], $post_data['date'], $post_data['status'], $post_data['payment'],
+										$post_data['id']
+								);
+								$wpdb->query($q);
 								return $post_data['id'];
 						}
 					}
 					$post_data = apply_filters('uap_save_referral_filter', $post_data);
 					/// SAVE
-					$wpdb->query("INSERT INTO $table
+					$q = $wpdb->prepare("INSERT INTO $table
 										VALUES( NULL,
-												'" . $post_data['refferal_wp_uid'] . "',
-												'" . $post_data['campaign'] . "',
-												'" . $post_data['affiliate_id'] . "',
-												'" . $post_data['visit_id'] . "',
-												'" . $post_data['description'] . "',
-												'" . $post_data['source'] . "',
-												'" . $post_data['reference'] . "',
-												'" . $post_data['reference_details'] . "',
-												'" . $post_data['parent_referral_id'] .  "',
-												'" . $post_data['child_referral_id'] .  "',
-												'" . $post_data['amount'] .  "',
-												'" . $post_data['currency'] .  "',
-												'" . $post_data['date'] .  "',
-												'" . $post_data['status'] .  "',
-												'" . $post_data['payment'] .  "');
-					");
+												%d,
+												%s,
+												%d,
+												%d,
+												%s,
+												%s,
+												%s,
+												%s,
+												%d,
+												%d,
+												%s,
+												%s,
+												%s,
+												%s,
+												%s );
+					", $post_data['refferal_wp_uid'], $post_data['campaign'], $post_data['affiliate_id'],
+					$post_data['visit_id'], $post_data['description'], $post_data['source'], $post_data['reference'],
+					$post_data['reference_details'], $post_data['parent_referral_id'], $post_data['child_referral_id'],
+					$post_data['amount'], $post_data['currency'], $post_data['date'], $post_data['status'], $post_data['payment']
+					);
+					$wpdb->query($q);
 
 					if ($post_data['campaign'] && isset($wpdb->insert_id)){
 						/// save into campaign if is insert and the campaign is set
@@ -2999,10 +3123,11 @@ if (!class_exists('Uap_Db')){
 					/// UPDATE
 					$referrals = (int)$temp_data->referrals;
 					$referrals++;
-					$wpdb->query("UPDATE $table
-										SET referrals='$referrals'
-										WHERE id='{$temp_data->id}';
-					");
+					$q = $wpdb->prepare("UPDATE $table
+										SET referrals=%s
+										WHERE id=%d
+					", $referrals, $temp_data->id);
+					$wpdb->query($q);
 				}
 			}
 		}
@@ -3058,10 +3183,12 @@ if (!class_exists('Uap_Db')){
 					}
 				}
 				/// DELETE FROM REFERRAL
-				$wpdb->query("DELETE FROM $table WHERE id='$referral_id';");
+				$q = $wpdb->prepare("DELETE FROM $table WHERE id=%d ", $referral_id);
+				$wpdb->query($q);
 
 				/// DELETE FROM VISITS
-				$wpdb->query("DELETE FROM " . $wpdb->prefix . "uap_visits WHERE referral_id='$referral_id';");
+				$q = $wpdb->prepare("DELETE FROM {$wpdb->prefix}uap_visits WHERE referral_id=%d ", $referral_id);
+				$wpdb->query($q);
 			}
 		}
 
@@ -3139,9 +3266,9 @@ if (!class_exists('Uap_Db')){
 			if ($reference){
 				global $wpdb;
 				$table = $wpdb->prefix . "uap_referrals";
-				$q = "SELECT id FROM $table WHERE reference='$reference' ";
+				$q = $wpdb->prepare("SELECT id FROM $table WHERE reference=%s ", $reference);
 				if (!empty($source)){
-					$q .= " AND source='$source' ";
+					$q .= $wpdb->prepare(" AND source=%s ", $source);
 				}
 				$data = $wpdb->get_row($q);
 				if (!empty($data->id)){
@@ -3193,7 +3320,7 @@ if (!class_exists('Uap_Db')){
 			if ($entry_id && $new_affiliate_id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_affiliate_referral_users_relations';
-				$q = $wpdb->prepare("UPDATE $table SET affiliate_id=%d WHERE id=%d;", $new_affiliate_id, $entry_id);
+				$q = $wpdb->prepare("UPDATE $table SET affiliate_id=%d WHERE id=%d ", $new_affiliate_id, $entry_id);
 				$wpdb->query($q);
 			}
 		}
@@ -3209,7 +3336,8 @@ if (!class_exists('Uap_Db')){
 				$q = $wpdb->prepare("SELECT * FROM $table WHERE affiliate_id=%d AND referral_wp_uid=%d", $old_affiliate, $referral_wp_id);
 				$data = $wpdb->get_row($q);
 				if (!empty($data->id)){
-					$wpdb->query("UPDATE $table SET affiliate_id='$new_affiliate' WHERE id='" . $data->id . "';");
+					$q = $wpdb->prepare("UPDATE $table SET affiliate_id=%d WHERE id=%d ", $new_affiliate, $data->id);
+					$wpdb->query($q);
 				}
 			}
 		}
@@ -3226,7 +3354,8 @@ if (!class_exists('Uap_Db')){
 			$data = $wpdb->get_results("SELECT * FROM $table;");
 			if (!empty($data)){
 				foreach ($data as $object){
-					$affiliates_data = $wpdb->get_results("SELECT affiliate_id FROM $table_b WHERE offer_id=" . $object->id . ";");
+					$q = $wpdb->prepare("SELECT affiliate_id FROM $table_b WHERE offer_id=%d ", $object->id);
+					$affiliates_data = $wpdb->get_results($q);
 					if ($affiliates_data){
 						if (!empty($affiliates)){
 							unset($affiliates);
@@ -3261,7 +3390,8 @@ if (!class_exists('Uap_Db')){
 			if ($id){
 				global $wpdb;
 				$table = $wpdb->prefix . "uap_offers";
-				$data = $wpdb->get_row("SELECT * FROM $table WHERE id='" . $id . "';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $id);
+				$data = $wpdb->get_row($q);
 				if (!empty($data)){
 					if (!empty($data->settings)){
 						$settings = unserialize($data->settings);
@@ -3313,8 +3443,10 @@ if (!class_exists('Uap_Db')){
 					$ids = array($ids);
 				}
 				foreach ($ids as $id){
-					$wpdb->query("DELETE FROM $table WHERE id='$id';");
-					$wpdb->query("DELETE FROM $table_offers_u_r WHERE offer_id='$id';");
+					$q = $wpdb->prepare("DELETE FROM $table WHERE id=%d ", $id);
+					$wpdb->query($q);
+					$q = $wpdb->prepare("DELETE FROM $table_offers_u_r WHERE offer_id=%d ", $id);
+					$wpdb->query($q);
 				}
 			}
 		}
@@ -3336,35 +3468,42 @@ if (!class_exists('Uap_Db')){
 
 				$settings = serialize($metas);
 				if (!empty($post_data['id'])){
-					$data = $wpdb->get_row("SELECT * FROM $table WHERE id='" . $post_data['id'] . "';");
+					$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $post_data['id']);
+					$data = $wpdb->get_row($q);
 					if (!empty($data)){
-						$wpdb->query("UPDATE $table SET
-											name = '" . $post_data['name'] . "',
-											start_date = '" . @$post_data['start_date'] . "',
-											end_date = '" . @$post_data['end_date'] . "',
-											amount_type = '" . @$post_data['amount_type'] . "',
-											amount_value = '" . @$post_data['amount_value'] . "',
-											settings = '" . $settings . "',
-											status = '" . $post_data['status'] .  "'
-										WHERE id='" . $post_data['id'] . "'
-						");
+						$q = $wpdb->prepare("UPDATE $table SET
+											name=%s,
+											start_date=%s,
+											end_date=%s,
+											amount_type=%s,
+											amount_value=%s,
+											settings=%s,
+											status=%s
+										WHERE id=%d
+						", @$post_data['name'], @$post_data['start_date'], @$post_data['end_date'], @$post_data['amount_type'],
+						@$post_data['amount_value'], $settings, $post_data['status'], $post_data['id'] );
+						$wpdb->query($q);
 						$this->save_offer_affiliate_reference($post_data['id'], $post_data['affiliates'], $post_data['source'], $post_data['products']);
 						return $post_data['id'];
 					}
 				}
-				$check = $wpdb->get_row("SELECT id FROM $table WHERE name='" . $post_data['name'] . "' ");
+				$q = $wpdb->prepare("SELECT id FROM $table WHERE name=%s ", $post_data['name']);
+				$check = $wpdb->get_row($q);
 				if ($check && !empty($check->id)){
 					return 0;
 				}
-				$wpdb->query("INSERT INTO $table VALUES( null,
-														 '" . $post_data['name'] . "',
-														 '" . $post_data['start_date'] . "',
-														 '" . $post_data['end_date'] . "',
-														 '" . $post_data['amount_type'] . "',
-														 '" . $post_data['amount_value'] . "',
-														 '" . $settings . "',
-														 '" . $post_data['status'] . "'
-				);");
+				$q = $wpdb->prepare("INSERT INTO $table VALUES( null,
+														 %s,
+														 %s,
+														 %s,
+														 %s,
+														 %s,
+														 %s,
+														 %s
+						);", $post_data['name'], $post_data['start_date'], $post_data['end_date'], $post_data['amount_type'],
+						$post_data['amount_value'], $settings, $post_data['status']
+				);
+				$wpdb->query($q);
 				$id = $wpdb->insert_id;
 				$this->save_offer_affiliate_reference($id, $post_data['affiliates'], $post_data['source'], $post_data['products']);
 				return $id;
@@ -3380,6 +3519,8 @@ if (!class_exists('Uap_Db')){
 			 */
 			$arr = array();
 			if ($affiliate_id){
+				$affiliate_id = esc_sql($affiliate_id);
+				$source = esc_sql($source);
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_offers_affiliates_reference';
 				$table_offers = $wpdb->prefix . 'uap_offers';
@@ -3413,13 +3554,15 @@ if (!class_exists('Uap_Db')){
 			if ($offer_id && $source){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_offers_affiliates_reference';
-				$wpdb->query("DELETE FROM $table WHERE offer_id='$offer_id';");// REMOVE OLD DATA
+				$q = $wpdb->prepare("DELETE FROM $table WHERE offer_id=%d ", $offer_id);
+				$wpdb->query($q);// REMOVE OLD DATA
 
 				if ($affiliates) $affiliates_arr = explode(',',  $affiliates);
 				else $affiliates_arr = array(-1);
 				if ($affiliates_arr){
 					foreach ($affiliates_arr as $affiliate_id){
-						$wpdb->query("INSERT INTO $table VALUES(null, '$offer_id', '$affiliate_id', '$source', '$products');");
+							$q = $wpdb->prepare("INSERT INTO $table VALUES(null, %d, %d, %s, %s);", $offer_id, $affiliate_id, $source, $products);
+							$wpdb->query($q);
 					}
 				}
 			}
@@ -3433,7 +3576,8 @@ if (!class_exists('Uap_Db')){
 			if ($offer_id && $col){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_offers_affiliates_reference';
-				$data = $wpdb->get_row("SELECT $col FROM $table WHERE offer_id='$offer_id';");
+				$q = $wpdb->prepare("SELECT $col FROM $table WHERE offer_id=%d ", $offer_id);
+				$data = $wpdb->get_row($q);
 				if (!empty($data->$col)){
 					return $data->$col;
 				}
@@ -3450,7 +3594,8 @@ if (!class_exists('Uap_Db')){
 			if ($offer_id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_offers_affiliates_reference';
-				$data = $wpdb->get_results("SELECT affiliate_id FROM $table WHERE offer_id='$offer_id';");
+				$q = $wpdb->prepare("SELECT affiliate_id FROM $table WHERE offer_id=%d ", $offer_id);
+				$data = $wpdb->get_results($q);
 				if ($data){
 					foreach ($data as $object){
 						if (!empty($object->affiliate_id)){
@@ -3469,6 +3614,7 @@ if (!class_exists('Uap_Db')){
 			 */
 			$return = array();
 			global $wpdb;
+			$char = esc_sql($char);
 			$q = "SELECT u.user_login, uap.id
 											FROM " . $wpdb->base_prefix . "users u
 											INNER JOIN " . $wpdb->prefix . "uap_affiliates uap
@@ -3476,6 +3622,7 @@ if (!class_exists('Uap_Db')){
 											WHERE u.user_login LIKE '%$char%'
 			";
 			if (!empty($exclude_user)){
+				$exclude_user = esc_sql($exclude_user);
 				$q .= " AND u.ID<>$exclude_user;";
 			}
 			$data = $wpdb->get_results($q);
@@ -3617,6 +3764,7 @@ if (!class_exists('Uap_Db')){
 			$arr = array();
 			global $wpdb;
 			$table = $wpdb->prefix . 'uap_ranks';
+			$col_name = esc_sql($col_name);
 			$data = $wpdb->get_results("SELECT id, $col_name FROM $table;");
 			if ($data && is_array($data)){
 				foreach ($data as $object){
@@ -3636,7 +3784,25 @@ if (!class_exists('Uap_Db')){
 			if ($col_name && $id && $value){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_ranks';
+				$col_name = esc_sql($col_name);
+				$value = esc_sql($value);
+				$id = esc_sql($id);
 				$wpdb->query("UPDATE $table SET $col_name='$value' WHERE id='$id';");
+			}
+		}
+
+		public function update_rank_column_force_empty($col_name='', $id=0, $value=0){
+			/*
+			 * @param string, int, float
+			 * @return none
+			 */
+			if ($col_name && $id){
+				global $wpdb;
+				$table = $wpdb->prefix . 'uap_ranks';
+				$col_name = esc_sql($col_name);
+				$value = esc_sql($value);
+				$id = esc_sql($id);
+				$wpdb->query("UPDATE $table SET $col_name='$value' WHERE id=$id ");
 			}
 		}
 
@@ -3648,7 +3814,8 @@ if (!class_exists('Uap_Db')){
 			global $wpdb;
 			$return = array();
 			$table = $wpdb->prefix . 'uap_campaigns';
-			$data = $wpdb->get_results("SELECT name FROM $table WHERE affiliate_id='$affiliate_id'");
+			$affiliate_id = esc_sql($affiliate_id);
+			$data = $wpdb->get_results("SELECT name FROM $table WHERE affiliate_id=$affiliate_id ");
 			if (!empty($data) && is_array($data)){
 				foreach ($data as $object){
 					$return[] = $object->name;
@@ -3678,7 +3845,8 @@ if (!class_exists('Uap_Db')){
 			if ($affiliate_id && $name){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_campaigns';
-				$wpdb->query("DELETE FROM $table WHERE name='$name' AND affiliate_id='$affiliate_id';");
+				$q = $wpdb->prepare("DELETE FROM $table WHERE name=%s AND affiliate_id=%d ", $name, $affiliate_id);
+				$wpdb->query($q);
 			}
 		}
 
@@ -3690,11 +3858,13 @@ if (!class_exists('Uap_Db')){
 			if ($visit_id && $referral_id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_visits';
-				$exists = $wpdb->get_row("SELECT * FROM $table WHERE id='$visit_id';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $visit_id);
+				$exists = $wpdb->get_row($q);
 				if ($exists){
-					$wpdb->query("UPDATE $table
-										SET referral_id='$referral_id'
-										WHERE id='$visit_id';");
+					$q = $wpdb->prepare("UPDATE $table
+										SET referral_id=%d
+										WHERE id=%d ", $referral_id, $visit_id);
+					$wpdb->query($q);
 				}
 			}
 		}
@@ -3719,9 +3889,13 @@ if (!class_exists('Uap_Db')){
 			}
 			$q = "SELECT DISTINCT affiliate_id, COUNT(id) as c FROM $table WHERE status='2' GROUP BY affiliate_id ";
 			if ($order_type && $order_by){
+				$order_by = esc_sql($order_by);
+				$order_type = esc_sql($order_type);
 				$q .= " ORDER BY " . $order_by . " " . $order_type;
 			}
 			if ($limit>-1 && $offset>-1){
+				$limit = esc_sql($limit);
+				$offset = esc_sql($offset);
 				$q .= " LIMIT " . $limit . " OFFSET " . $offset;
 			}
 			$data = $wpdb->get_results($q);
@@ -3730,7 +3904,7 @@ if (!class_exists('Uap_Db')){
 					/// getting unpaid items
 					$temp_data = $wpdb->get_row("SELECT COUNT(id) as c, SUM(amount) as s, currency
 													FROM $table
-													WHERE affiliate_id='" . $object->affiliate_id . "'
+													WHERE affiliate_id='" . esc_sql($object->affiliate_id) . "'
 													AND status='2'
 													AND payment='0';");
 					$return[$object->affiliate_id]['count_unpaid'] = (empty($temp_data->c)) ? 0 : $temp_data->c;
@@ -3739,7 +3913,7 @@ if (!class_exists('Uap_Db')){
 					/// getting paid items
 					$temp_data = $wpdb->get_row("SELECT COUNT(id) as c, SUM(amount) as s, currency
 													FROM $table
-													WHERE affiliate_id='" . $object->affiliate_id . "'
+													WHERE affiliate_id='" . esc_sql($object->affiliate_id) . "'
 													AND status='2'
 													AND payment='2';");
 					$return[$object->affiliate_id]['count_paid'] = (empty($temp_data->c)) ? 0 : $temp_data->c;
@@ -3749,7 +3923,7 @@ if (!class_exists('Uap_Db')){
 					////
 					$temp_data = $wpdb->get_row("SELECT COUNT(id) as c
 													FROM $table_payments
-													WHERE affiliate_id='" . $object->affiliate_id . "' ;");
+													WHERE affiliate_id='" . esc_sql($object->affiliate_id) . "' ;");
 					$return[$object->affiliate_id]['has_transactions'] = (empty($temp_data->c)) ? 0 : $temp_data->c;
 					///
 
@@ -3787,7 +3961,7 @@ if (!class_exists('Uap_Db')){
 
 				$table = $wpdb->base_prefix . 'uap_referrals';
 				$q = "SELECT COUNT(id) as c, SUM(amount) as s, currency FROM $table
-							WHERE affiliate_id='" . $affiliate_id . "'
+							WHERE affiliate_id='" . esc_sql($affiliate_id) . "'
 							AND status='2'
 							AND payment='0' ";
 				if ($ids_in){
@@ -3798,7 +3972,7 @@ if (!class_exists('Uap_Db')){
 				$return['currency'] = (empty($temp_data->currency)) ? 'USD' : $temp_data->currency;
 				if (!$ids_in){
 					$temp_data = $wpdb->get_results("SELECT id FROM $table
-														WHERE affiliate_id='" . $affiliate_id . "'
+														WHERE affiliate_id='" . esc_sql($affiliate_id) . "'
 														AND status='2'
 														AND payment='0' ");
 					if ($temp_data){
@@ -3827,11 +4001,12 @@ if (!class_exists('Uap_Db')){
 			if ($ids_in){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_referrals';
+				$ids_in = esc_sql($ids_in);
 				$q = "SELECT DISTINCT affiliate_id FROM $table WHERE status='2' AND id IN($ids_in)";
 				$data = $wpdb->get_results($q);
 				if ($data){
 					foreach ($data as $object){
-						$temp_data = $wpdb->get_results("SELECT id, amount, currency FROM $table WHERE status='2' AND id IN($ids_in) AND affiliate_id='" . $object->affiliate_id . "';");
+						$temp_data = $wpdb->get_results("SELECT id, amount, currency FROM $table WHERE status='2' AND id IN($ids_in) AND affiliate_id='" . esc_sql($object->affiliate_id) . "';");
 						if ($temp_data){
 							$return[$object->affiliate_id]['amount'] = 0;
 							foreach ($temp_data as $inside_object){
@@ -3868,6 +4043,7 @@ if (!class_exists('Uap_Db')){
 			 */
 			$return = array();
 			if ($affiliate_id){
+				$affiliate_id = esc_sql($affiliate_id);
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_referrals';
 				if ($count){
@@ -3897,9 +4073,13 @@ if (!class_exists('Uap_Db')){
 					}
 				}
 				if ($order_type && $order_by){
+					$order_by = esc_sql($order_by);
+					$order_type = esc_sql($order_type);
 					$q .= " ORDER BY " . $order_by . " " . $order_type;
 				}
 				if ($limit>-1 && $offset>-1){
+					$limit = esc_sql($limit);
+					$offset = esc_sql($offset);
 					$q .= " LIMIT " . $limit . " OFFSET " . $offset;
 				}
 				$data = $wpdb->get_results($q);
@@ -3928,6 +4108,7 @@ if (!class_exists('Uap_Db')){
 				$q = "SELECT COUNT(*) as c FROM $table";
 				$q .= " WHERE 1=1";
 				if ($affiliate_id){
+					$affiliate_id = esc_sql($affiliate_id);
 					$q .= " AND affiliate_id='$affiliate_id' ";
 				}
 				if (!empty($where_conditions)){
@@ -3944,6 +4125,7 @@ if (!class_exists('Uap_Db')){
 			$q = "SELECT * FROM $table";
 			$q .= " WHERE 1=1";
 			if ($affiliate_id){
+				$affiliate_id = esc_sql($affiliate_id);
 				$q .= " AND affiliate_id='$affiliate_id' ";
 			}
 			if (!empty($where_conditions)){
@@ -3952,9 +4134,13 @@ if (!class_exists('Uap_Db')){
 				}
 			}
 			if ($order_type && $order_by){
+				$order_by = esc_sql($order_by);
+				$order_type = esc_sql($order_type);
 				$q .= " ORDER BY " . $order_by . " " . $order_type;
 			}
 			if ($limit>-1 && $offset>-1){
+				$limit = esc_sql($limit);
+				$offset = esc_sql($offset);
 				$q .= " LIMIT " . $limit . " OFFSET " . $offset;
 			}
 			$data = $wpdb->get_results($q);
@@ -3979,7 +4165,8 @@ if (!class_exists('Uap_Db')){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_referrals';
 				foreach ($ids as $id){
-					$wpdb->query("UPDATE $table SET payment=$payment_status WHERE id='$id';");
+					$q = $wpdb->prepare("UPDATE $table SET payment=%s WHERE id=%d ", $payment_status, $id);
+					$wpdb->query($q);
 				}
 			}
 		}
@@ -3996,19 +4183,23 @@ if (!class_exists('Uap_Db')){
 				$data['payment_details'] = $this->get_current_payment_settings_for_affiliate_id($data['affiliate_id']);
 
 				$table = $wpdb->prefix . 'uap_payments';
-				$wpdb->query("INSERT INTO $table VALUES( null,
-														 '" . $data['payment_type'] . "',
-														 '" . $data['transaction_id'] . "',
-														 '" . $data['referral_ids'] . "',
-														 '" . $data['affiliate_id'] . "',
-														 '" . $data['amount'] . "',
-														 '" . $data['currency'] . "',
-														 '" . $data['payment_details'] . "',
-														 '" . $data['create_date'] . "',
-														 '" . $data['update_date'] . "',
+				$q = $wpdb->prepare("INSERT INTO $table VALUES( null,
+														 %s,
+														 %s,
+														 %s,
+														 %s,
+														 %s,
+														 %s,
+														 %s,
+														 %s,
+														 %s,
 														 '',
-														 '" . $data['status'] . "'
-				);");
+														 %s
+				);", $data['payment_type'], $data['transaction_id'], $data['referral_ids'],
+				$data['affiliate_id'], $data['amount'], $data['currency'], $data['payment_details'],
+				$data['create_date'], $data['update_date'], $data['status']
+				);
+				$wpdb->query($q);
 
 				/// NOTIFICATION TO AFFILIATE
 				$id = $wpdb->insert_id;
@@ -4023,6 +4214,7 @@ if (!class_exists('Uap_Db')){
 			 */
 			$return = array();
 			if ($affiliate_id){
+				$affiliate_id = esc_sql($affiliate_id);
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_referrals';
 				if ($count){
@@ -4045,9 +4237,13 @@ if (!class_exists('Uap_Db')){
 					}
 				}
 				if ($order_type && $order_by){
+					$order_by = esc_sql($order_by);
+					$order_type = esc_sql($order_type);
 					$q .= " ORDER BY " . $order_by . " " . $order_type;
 				}
 				if ($limit>-1 && $offset>-1){
+					$limit = esc_sql($limit);
+					$offset = esc_sql($offset);
 					$q .= " LIMIT " . $limit . " OFFSET " . $offset;
 				}
 				$data = $wpdb->get_results($q);
@@ -4073,7 +4269,7 @@ if (!class_exists('Uap_Db')){
 			global $wpdb;
 			$table = $wpdb->prefix . 'uap_referrals';
 			if ($count){
-				$q = "SELECT COUNT(*) as c FROM $table WHERE status='2' AND payment='$payment' ";
+				$q = $wpdb->prepare("SELECT COUNT(*) as c FROM $table WHERE status='2' AND payment=%s ", $payment);
 				if (!empty($where_conditions)){
 					foreach ($where_conditions as $condition){
 						$q .= " AND " . $condition ;
@@ -4085,16 +4281,20 @@ if (!class_exists('Uap_Db')){
 				}
 				return array();
 			}
-			$q = "SELECT * FROM $table WHERE status='2' AND payment='$payment' ";
+			$q = $wpdb->prepare("SELECT * FROM $table WHERE status='2' AND payment=%s ", $payment);
 			if (!empty($where_conditions)){
 				foreach ($where_conditions as $condition){
 					$q .= " AND " . $condition ;
 				}
 			}
 			if ($order_type && $order_by){
+				$order_by = esc_sql($order_by);
+				$order_type = esc_sql($order_type);
 				$q .= " ORDER BY " . $order_by . " " . $order_type;
 			}
 			if ($limit>-1 && $offset>-1){
+				$limit = esc_sql($limit);
+				$offset = esc_sql($offset);
 				$q .= " LIMIT " . $limit . " OFFSET " . $offset;
 			}
 			$data = $wpdb->get_results($q);
@@ -4123,23 +4323,27 @@ if (!class_exists('Uap_Db')){
 				$data['payment_details'] = $this->get_current_payment_settings_for_affiliate_id($data['affiliate_id']);
 
 				$table = $wpdb->prefix . 'uap_payments';
-				$wpdb->query("INSERT INTO $table VALUES( null,
-														'" . $args['payment_type'] . "',
-														'" . $args['transaction_id'] . "',
-														'" . $referral_id . "',
-														'" . $temp_data['affiliate_id'] . "',
-														'" . $temp_data['amount'] . "',
-														'" . $temp_data['currency'] . "',
-														'" . $data['payment_details'] . "',
-														'" . $args['create_date'] . "',
-														'" . $args['update_date'] . "',
+				$q = $wpdb->prepare("INSERT INTO $table VALUES( null,
+														%s,
+														%s,
+														%s,
+														%s,
+														%s,
+														%s,
+														%s,
+														%s,
+														%s,
 														'',
-														'" . $args['status'] . "'
-				);");
+														%s
+						);", $args['payment_type'], $args['transaction_id'], $referral_id, $temp_data['affiliate_id'],
+						$temp_data['amount'], $temp_data['currency'], $data['payment_details'], $args['create_date'],
+						$args['update_date'], $args['status']
+				);
+				$wpdb->query($q);
 			}
 		}
 
-		public function get_stats_for_payments($affiliate_id=0){
+		public function get_stats_for_payments($affiliate_id=0, $exclude_sources_from_referrals=''){
 			/*
 			 * @param int
 			 * @return array
@@ -4161,6 +4365,7 @@ if (!class_exists('Uap_Db')){
 
 			$q = "SELECT SUM(amount) as a FROM $table";
 			if ($affiliate_id){
+				$affiliate_id = esc_sql($affiliate_id);
 				$q .= " WHERE affiliate_id='$affiliate_id' ";
 			}
 			$temp_data = $wpdb->get_row($q);
@@ -4169,7 +4374,11 @@ if (!class_exists('Uap_Db')){
 			$table = $wpdb->prefix . 'uap_referrals';
 			$q = "SELECT SUM(amount) as a FROM $table WHERE payment='0' AND status='2'";
 			if ($affiliate_id){
+				$affiliate_id = esc_sql($affiliate_id);
 				$q .= " AND affiliate_id='$affiliate_id' ";
+			}
+			if (!empty($exclude_sources_from_referrals)){
+				$q .= " AND source NOT IN ('$exclude_sources_from_referrals') ";
 			}
 			$temp_data = $wpdb->get_row($q);
 			$array['unpaid_payments_value'] = (empty($temp_data->a)) ? 0 : $temp_data->a;
@@ -4177,14 +4386,22 @@ if (!class_exists('Uap_Db')){
 			$table = $wpdb->prefix . 'uap_referrals';
 			$q = "SELECT COUNT(id) as c FROM $table WHERE payment='0' AND status='2'";
 			if ($affiliate_id){
+				$affiliate_id = esc_sql($affiliate_id);
 				$q .= " AND affiliate_id='$affiliate_id' ";
+			}
+			if (!empty($exclude_sources_from_referrals)){
+				$q .= " AND source NOT IN ('$exclude_sources_from_referrals') ";
 			}
 			$temp_data = $wpdb->get_row($q);
 			$array['unpaid_referrals_count'] = (empty($temp_data->c)) ? 0 : $temp_data->c;
 
 			$q = "SELECT COUNT(id) as c FROM $table WHERE payment='2' AND status='2'";
 			if ($affiliate_id){
+				$affiliate_id = esc_sql($affiliate_id);
 				$q .= " AND affiliate_id='$affiliate_id' ";
+			}
+			if (!empty($exclude_sources_from_referrals)){
+				$q .= " AND source NOT IN ('$exclude_sources_from_referrals') ";
 			}
 			$temp_data = $wpdb->get_row($q);
 			$array['paid_referrals_count'] = (empty($temp_data->c)) ? 0 : $temp_data->c;
@@ -4192,16 +4409,21 @@ if (!class_exists('Uap_Db')){
 			$table = $wpdb->prefix . 'uap_referrals';
 			$q = "SELECT COUNT(*) as c FROM $table WHERE 1=1";
 			if ($affiliate_id){
+				$affiliate_id = esc_sql($affiliate_id);
 				$q .= " AND affiliate_id='$affiliate_id' ";
+			}
+			if (!empty($exclude_sources_from_referrals)){
+				$q .= " AND source NOT IN ('$exclude_sources_from_referrals') ";
 			}
 			$temp_data = $wpdb->get_row($q);
 			$array['referrals'] = (empty($temp_data->c)) ? 0 : $temp_data->c;
 			//$array['referrals'] = $array['unpaid_referrals_count'] + $array['paid_referrals_count'];
 
 			$temp_table = $wpdb->prefix . 'uap_visits';
-			$q = "SELECT COUNT(*) as c FROM $temp_table WHERE affiliate_id=$affiliate_id";
+			$q = "SELECT COUNT(*) as c, COUNT(IF(referral_id != 0,1,null)) d FROM $temp_table WHERE affiliate_id=$affiliate_id";
 			$temp_data = $wpdb->get_row($q);
 			$array['visits'] = (isset($temp_data->c)) ? $temp_data->c : 0;
+			$array['converted'] = (isset($temp_data->d)) ? $temp_data->d : 0;
 
 			return $array;
 		}
@@ -4216,18 +4438,21 @@ if (!class_exists('Uap_Db')){
 				/// update payments
 				$table = $wpdb->prefix . 'uap_payments';
 				$now = date("Y-m-d H:i:s", time());
-				$wpdb->query("UPDATE $table SET status='$status', update_date='$now' WHERE id='$id';");
+				$q = $wpdb->prepare("UPDATE $table SET status=%s, update_date='$now' WHERE id=%d ", $status, $id);
+				$wpdb->query($q);
 
 				/// NOTIFICATION TO AFFILIATE
 				$this->payments_send_affiliate_notification_by_status($id, $status);
 
 				///update referrals status
-				$data = $wpdb->get_row("SELECT referral_ids FROM $table WHERE id=$id");
+				$q = $wpdb->prepare("SELECT referral_ids FROM $table WHERE id=%d", $id);
+				$data = $wpdb->get_row($q);
 				if (!empty($data->referral_ids)){
 					$referrals_ids = explode(',', $data->referral_ids);
 					$table = $wpdb->prefix . 'uap_referrals';
 					foreach ($referrals_ids as $referral_id){
-						$wpdb->query("UPDATE $table SET payment=$status WHERE id=$referral_id;");
+						$q = $wpdb->prepare("UPDATE $table SET payment=%s WHERE id=%d;", $status, $referral_id);
+						$wpdb->query($q);
 					}
 				}
 			}
@@ -4241,7 +4466,8 @@ if (!class_exists('Uap_Db')){
 			if ($id && $value){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_payments';
-				$wpdb->query("UPDATE $table SET payment_special_status='$value' WHERE id=$id ");
+				$q = $wpdb->prepare("UPDATE $table SET payment_special_status=%s WHERE id=%d ", $value, $id);
+				$wpdb->query($q);
 			}
 		}
 
@@ -4253,7 +4479,7 @@ if (!class_exists('Uap_Db')){
 			 if ($transaction_id && $status){
 			 	global $wpdb;
 			 	$table = $wpdb->prefix . 'uap_payments';
-			 	$data = $wpdb->get_row("SELECT id FROM $table WHERE transaction_id='$transaction_id';");
+			 	$data = $wpdb->get_row($q);
 			 	if ($data && !empty($data->id)){
 			 		switch ($status){
 						case 'failed':
@@ -4285,16 +4511,19 @@ if (!class_exists('Uap_Db')){
 			if ($transaction_id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_payments';
-				$data = $wpdb->get_row("SELECT referral_ids FROM $table WHERE id='$transaction_id' ");
+				$q = $wpdb->prepare("SELECT referral_ids FROM $table WHERE id=%d ", $transaction_id);
+				$data = $wpdb->get_row($q);
 				if (!empty($data->referral_ids)){
 					$ids = explode(',', $data->referral_ids);
 					if ($ids){
 						$table = $wpdb->prefix . 'uap_referrals';
 						foreach ($ids as $id){
-							$wpdb->query("UPDATE $table SET payment='0' WHERE id='$id';");
+								$q = $wpdb->prepare("UPDATE $table SET payment='0' WHERE id=%d ", $id);
+								$wpdb->query($q);
 						}
 						$table = $wpdb->prefix . 'uap_payments';
-						$wpdb->query("DELETE FROM $table WHERE id='$transaction_id' ");
+						$q = $wpdb->prepare("DELETE FROM $table WHERE id=%d ", $transaction_id);
+						$wpdb->query($q);
 					}
 				}
 			}
@@ -4328,7 +4557,8 @@ if (!class_exists('Uap_Db')){
 					$uid = $this->get_uid_by_affiliate_id($data->parent_affiliate_id);
 					if ($uid){
 						$table = $wpdb->base_prefix . 'users';
-						$inside_data = $wpdb->get_row("SELECT * FROM $table WHERE ID='$uid';");
+						$q = $wpdb->prepare("SELECT * FROM $table WHERE ID=%d ", $uid);
+						$inside_data = $wpdb->get_row($q);
 						if (!empty($inside_data->ID)){
 							return $data->parent_affiliate_id;
 						}
@@ -4347,7 +4577,7 @@ if (!class_exists('Uap_Db')){
 			if ($parent_id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_mlm_relations';
-				$q = "SELECT affiliate_id FROM $table WHERE parent_affiliate_id='$parent_id';";
+				$q = $wpdb->prepare("SELECT affiliate_id FROM $table WHERE parent_affiliate_id=%d ", $parent_id);
 				$data = $wpdb->get_results($q);
 				if ($data){
 					foreach ($data as $object){
@@ -4500,7 +4730,7 @@ if (!class_exists('Uap_Db')){
 			if ($affiliate_id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_mlm_relations';
-				$q = "SELECT COUNT(affiliate_id) as c FROM $table WHERE parent_affiliate_id='$affiliate_id';";
+				$q = $wpdb->prepare("SELECT COUNT(affiliate_id) as c FROM $table WHERE parent_affiliate_id=%d ", $affiliate_id);
 				$data = $wpdb->get_row($q);
 				$count = (empty($data->c)) ? 0 : $data->c;
 			}
@@ -4518,6 +4748,7 @@ if (!class_exists('Uap_Db')){
 			$table_a = $wpdb->prefix . 'uap_affiliates';
 			$table_au = $wpdb->prefix . 'uap_affiliate_referral_users_relations';
 
+			$affiliate_username = esc_sql($affiliate_username);
 			$data = $wpdb->get_results("
 										SELECT a.id as id
 											FROM $table_u as u
@@ -4535,6 +4766,7 @@ if (!class_exists('Uap_Db')){
 					}
 				}
 				$id_string = (empty($ids)) ? '' : implode(',',$ids);
+				$user_username = esc_sql($user_username);
 				$data = $wpdb->get_results("
 										SELECT au.*, u.user_login
 											FROM $table_u as u
@@ -4564,6 +4796,7 @@ if (!class_exists('Uap_Db')){
 			$table_u = $wpdb->base_prefix . 'users';
 			$table_a = $wpdb->prefix . 'uap_affiliates';
 
+			$affiliate_username = esc_sql($affiliate_username);
 			$data = $wpdb->get_results("
 										SELECT a.id as id, u.user_login as username
 											FROM $table_u as u
@@ -4589,7 +4822,8 @@ if (!class_exists('Uap_Db')){
 			if ($id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_affiliate_referral_users_relations';
-				$data = $wpdb->get_row("SELECT * FROM $table WHERE id='$id'");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $id);
+				$data = $wpdb->get_row($q);
 				if (!empty($data->affiliate_id) && !empty($data->referral_wp_uid)){
 					$return['referral_username'] = $this->get_username_by_wpuid($data->referral_wp_uid);
 					$return['affiliate_id'] = $data->affiliate_id;
@@ -4607,7 +4841,8 @@ if (!class_exists('Uap_Db')){
 			if ($wpuid){
 				global $wpdb;
 				$table = $wpdb->base_prefix . 'users';
-				$data = $wpdb->get_row("SELECT user_login FROM $table WHERE ID='$wpuid'");
+				$q = $wpdb->prepare("SELECT user_login FROM $table WHERE ID=%d ", $wpuid);
+				$data = $wpdb->get_row($q);
 				if (!empty($data->user_login)){
 					return $data->user_login;
 				}
@@ -4623,7 +4858,8 @@ if (!class_exists('Uap_Db')){
 			if ($id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_affiliate_referral_users_relations';
-				$wpdb->query("DELETE FROM $table WHERE id='$id';");
+				$q = $wpdb->prepare("DELETE FROM $table WHERE id=%d ", $id);
+				$wpdb->query($q);
 			}
 		}
 
@@ -4636,6 +4872,7 @@ if (!class_exists('Uap_Db')){
 			if ($search){
 				global $wpdb;
 				$table = $wpdb->prefix . 'posts';
+				$search = esc_sql($search);
 				$data = $wpdb->get_results("SELECT post_title, ID
 												FROM $table
 												WHERE
@@ -4660,10 +4897,11 @@ if (!class_exists('Uap_Db')){
 			if ($id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'posts';
-				$data = $wpdb->get_row("SELECT post_title
+				$q = $wpdb->prepare("SELECT post_title
 												FROM $table
-												WHERE ID='$id'
-				");
+												WHERE ID=%d
+				", $id);
+				$data = $wpdb->get_row($q);
 				if (!empty($data->post_title)){
 					return $data->post_title;
 				}
@@ -4715,6 +4953,7 @@ if (!class_exists('Uap_Db')){
 			if ($search){
 				global $wpdb;
 				$table = $wpdb->prefix . 'posts';
+				$search = esc_sql($search);
 				$data = $wpdb->get_results("SELECT post_title, ID
 												FROM $table
 												WHERE
@@ -4739,10 +4978,11 @@ if (!class_exists('Uap_Db')){
 			if ($id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'posts';
-				$data = $wpdb->get_row("SELECT post_title
+				$q = $wpdb->prepare("SELECT post_title
 						FROM $table
-						WHERE ID='$id'
-						");
+						WHERE ID=%d
+				", $id);
+				$data = $wpdb->get_row($q);
 				if (!empty($data->post_title)){
 					return $data->post_title;
 				}
@@ -4805,6 +5045,7 @@ if (!class_exists('Uap_Db')){
 			global $wpdb;
 			$array = array();
 			$table = $wpdb->prefix . 'uap_referrals';
+			$limit = esc_sql($limit);
 			$data = $wpdb->get_results("SELECT * FROM $table ORDER BY date DESC LIMIT $limit;");
 			if ($data){
 				foreach ($data as $object){
@@ -4826,6 +5067,7 @@ if (!class_exists('Uap_Db')){
 			global $wpdb;
 			$array = array();
 			$table = $wpdb->prefix . 'uap_referrals';
+			$limit = esc_sql($limit);
 			$data = $wpdb->get_results("SELECT affiliate_id,SUM(amount) as s FROM $table GROUP BY affiliate_id ORDER BY s DESC LIMIT $limit;");
 
 			if ($data && is_array($data)){
@@ -4875,6 +5117,7 @@ if (!class_exists('Uap_Db')){
 			$array = array();
 			$now = time();
 			$today = strtotime('00:00:00');
+			$affiliate_id = esc_sql($affiliate_id);
 			if ($time){
 				switch ($time){
 					case 'today':
@@ -5030,6 +5273,7 @@ if (!class_exists('Uap_Db')){
 			 if ($affiliate_id){
 				$now = time();
 				$today = strtotime('00:00:00');
+				$affiliate_id = esc_sql($affiliate_id);
 				if ($time){
 					switch ($time){
 						case 'today':
@@ -5097,7 +5341,8 @@ if (!class_exists('Uap_Db')){
 			if ($username){
 				global $wpdb;
 				$table = $wpdb->base_prefix . "users";
-				$data = $wpdb->get_row("SELECT ID, user_email FROM $table WHERE `user_login`='$username';");
+				$q = $wpdb->prepare("SELECT ID, user_email FROM $table WHERE user_login=%s ", $username);
+				$data = $wpdb->get_row($q);
 				if (isset($data->ID) && isset($data->user_email)){
 					$arr['ID'] = $data->ID;
 					$arr['email'] = $data->user_email;
@@ -5114,7 +5359,8 @@ if (!class_exists('Uap_Db')){
 			if ($uid){
 				global $wpdb;
 				$table = $wpdb->base_prefix . "users";
-				$data = $wpdb->get_row("SELECT user_email FROM $table WHERE ID=$uid;");
+				$q = $wpdb->prepare("SELECT user_email FROM $table WHERE ID=%d ", $uid);
+				$data = $wpdb->get_row($q);
 				if (isset($data->user_email)){
 					return $data->user_email;
 				}
@@ -5131,7 +5377,8 @@ if (!class_exists('Uap_Db')){
 			if ($id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_payments';
-				$data = $wpdb->get_row("SELECT * FROM $table WHERE id=$id");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE id=%d ", $id);
+				$data = $wpdb->get_row($q);
 				if ($data){
 					$table = $wpdb->prefix . 'uap_referrals';
 					$referrals_data = $wpdb->get_results("SELECT * FROM $table WHERE id IN (" . $data->referral_ids . ");");
@@ -5157,7 +5404,8 @@ if (!class_exists('Uap_Db')){
 			if ($transaction_id){
 				global $wpdb;
 				$table = $wpdb->prefix . 'uap_payments';
-				$data = $wpdb->get_row("SELECT payment_details FROM $table WHERE id=$transaction_id");
+				$q = $wpdb->prepare("SELECT payment_details FROM $table WHERE id=%d ", $transaction_id);
+				$data = $wpdb->get_row($q);
 				if ($data && !empty($data->payment_details)){
 					return unserialize($data->payment_details);
 				}
@@ -5179,7 +5427,8 @@ if (!class_exists('Uap_Db')){
 					global $wpdb;
 					$table_a = $wpdb->base_prefix . 'users';
 					$table_b = $wpdb->prefix . 'uap_affiliates';
-					$data = $wpdb->get_row("SELECT a.user_email FROM $table_a as a INNER JOIN $table_b as b ON a.ID=b.uid WHERE b.id=$affiliate_id");
+					$q = $wpdb->prepare("SELECT a.user_email FROM $table_a as a INNER JOIN $table_b as b ON a.ID=b.uid WHERE b.id=%d", $affiliate_id);
+					$data = $wpdb->get_row($q);
 					if (!empty($data->user_email)){
 						return $data->user_email;
 					}
@@ -5242,6 +5491,7 @@ if (!class_exists('Uap_Db')){
 			$now = time();
 			$today = strtotime('00:00:00');
 
+			$affiliate_id = esc_sql($affiliate_id);
 			$last_week = strtotime('-7 day', $today);
 			$last_month = strtotime('-30 day', $today);
 			switch ($interval){
@@ -5319,6 +5569,7 @@ if (!class_exists('Uap_Db')){
 			$now = time();
 			$today = strtotime('00:00:00');
 
+			$affiliate_id = esc_sql($affiliate_id);
 			$last_week = strtotime('-7 day', $today);
 			$last_month = strtotime('-30 day', $today);
 			switch ($interval){
@@ -5612,6 +5863,7 @@ if (!class_exists('Uap_Db')){
 				 global $wpdb;
 				 $table_a = $wpdb->base_prefix . 'users';
 				 $table_b = $wpdb->prefix . 'uap_affiliates';
+				 $affiliate_id = esc_sql($affiliate_id);
 				 $data = $wpdb->get_row("SELECT a.user_email FROM $table_a as a INNER JOIN $table_b as b ON a.ID=b.uid WHERE b.id=$affiliate_id");
 				 if (!empty($data->user_email)){
 					return $data->user_email;
@@ -5649,20 +5901,18 @@ if (!class_exists('Uap_Db')){
 			 * @return boolean
 			 */
 			$return = FALSE;
-			// if ($this->check_envato_customer($code)){
+			if ($this->check_envato_customer($code)){
 				update_option('uap_license_set', 1);
 				$return = TRUE;
-			// } else {
-			// 	update_option('uap_license_set', 0);
-			// 	$return = FALSE;
-			// }
+			} else {
+				update_option('uap_license_set', 0);
+				$return = FALSE;
+			}
 			update_option('uap_envato_code', $code);
 			return $return;
 		}
 
 		public function envato_check_license(){
-      // @CUSTOM SCRIPT :)
-      return TRUE;
 			/*
 			 * @param none
 			 * @return bool
@@ -5684,12 +5934,13 @@ if (!class_exists('Uap_Db')){
 			 global $wpdb;
 			 $table_a = $wpdb->prefix . 'uap_payments';
 			 $table_b = $wpdb->prefix . 'uap_affiliates';
-			 $data = $wpdb->get_row("SELECT a.*, b.uid as uid
+			 $q = $wpdb->prepare("SELECT a.*, b.uid as uid
 											FROM $table_a as a
 											INNER JOIN $table_b as b
 											ON a.affiliate_id=b.id
-											WHERE a.id=$id
-			 ");
+											WHERE a.id=%d
+			 ", $id);
+			 $data = $wpdb->get_row($q);
 			 if ($data && isset($data->amount) && isset($data->currency) && isset($data->uid)){
 				$payment_data = array('{amount_to_pay}' => $data->amount, '{amount_currency}' => $data->currency);
 				switch ($status){
@@ -5805,26 +6056,33 @@ if (!class_exists('Uap_Db')){
 			 );
 			 $settings['description'] = str_replace("'", '', $settings['description']);
 			 $settings['description'] = str_replace('"', '', $settings['description']);
-
+			 $settings['description'] = stripslashes_deep($settings['description']);
+			
 			 if (!isset($settings['amount_value']) && $settings['amount_value']==''){
 			 	return 0;
 			 }
 			 $settings = serialize($settings);
 			 if (empty($post_data['id'])){
 			 	/// create
-			 	$exists = $wpdb->get_row("SELECT * FROM $table WHERE slug='" . $post_data['slug'] . "';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE slug=%s ", $post_data['slug']);
+			 	$exists = $wpdb->get_row($q);
 				if ($exists && !empty($exists->id)){
 					return 0;
 				}
-				$wpdb->query("INSERT INTO $table VALUES(null, '" . $post_data['slug'] . "', '$settings', NOW(), '" . $post_data['status'] . "');");
+				$q = $wpdb->prepare("INSERT INTO $table VALUES(null, %s, %s, NOW(), %s);", $post_data['slug'], $settings, $post_data['status']);
+				$wpdb->query($q);
 				return 1;
 			 } else {
 			 	/// update
-			 	$exists = $wpdb->get_row("SELECT * FROM $table WHERE slug='" . $post_data['slug'] . "' AND id<>'" . $post_data['id'] . "';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE slug=%s AND id<>%d;", $post_data['slug'], $post_data['id']);
+			 	$exists = $wpdb->get_row($q);
 				if ($exists && !empty($exists->id)){
 					return 0;
 				}
-				$wpdb->query("UPDATE $table SET slug='" . $post_data['slug'] . "', settings='$settings', status='" . $post_data['status'] . "' WHERE id='" . $post_data['id'] . "' ");
+				$q = $wpdb->prepare("UPDATE $table SET slug=%s, settings=%s, status=%s WHERE id=%d ",
+						$post_data['slug'], $settings, $post_data['status'], $post_data['id']
+				);
+				$wpdb->query($q);
 			 	return 1;
 			 }
 		}
@@ -5837,7 +6095,8 @@ if (!class_exists('Uap_Db')){
 			 global $wpdb;
 			 $table = $wpdb->prefix . 'uap_landing_commissions';
 			 if ($slug){
-		 		 $data = $wpdb->get_row("SELECT * FROM $table WHERE slug='$slug';");
+				 $q = $wpdb->prepare("SELECT * FROM $table WHERE slug=%s ", $slug);
+		 		 $data = $wpdb->get_row($q);
 				 if ($data){
 				 	$settings = (isset($data->settings)) ? unserialize($data->settings) : array();
 				 	$array = array(
@@ -5876,7 +6135,8 @@ if (!class_exists('Uap_Db')){
 			 */
 			 global $wpdb;
 			 $table = $wpdb->prefix . 'uap_landing_commissions';
-			 $wpdb->query("DELETE FROM $table WHERE slug='$slug';");
+			 $q = $wpdb->prepare("DELETE FROM $table WHERE slug=%s ", $slug);
+			 $wpdb->query($q);
 		}
 
 		public function get_all_landing_commision_source_type(){
@@ -5916,19 +6176,27 @@ if (!class_exists('Uap_Db')){
 			 $settings = serialize($settings);
 			 if (empty($post_data['id'])){
 			 	/// create
-			 	$exists = $wpdb->get_row("SELECT * FROM $table WHERE code='" . $post_data['code'] . "';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE code=%s ", $post_data['code']);
+			 	$exists = $wpdb->get_row($q);
 				if ($exists && !empty($exists->id)){
 					return 0;
 				}
-				$wpdb->query("INSERT INTO $table VALUES(null, '" . $post_data['code'] . "', '" . $post_data['affiliate_id'] . "', '" . $post_data['type'] . "', '" . $settings . "', '" . $post_data['status'] . "');");
+				$q = $wpdb->prepare("INSERT INTO $table VALUES(null, %s, %s, %s, %s, %s);",
+						$post_data['code'], $post_data['affiliate_id'], $post_data['type'], $settings, $post_data['status']
+				);
+				$wpdb->query($q);
 				return 1;
 			 } else {
 			 	/// update
-			 	$exists = $wpdb->get_row("SELECT * FROM $table WHERE code='" . $post_data['code'] . "' AND affiliate_id<>'" . $post_data['affiliate_id'] . "';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE code=%s AND affiliate_id<>%d ", $post_data['code'], $post_data['affiliate_id']);
+			 	$exists = $wpdb->get_row($q);
 				if ($exists && !empty($exists->id)){
 					return 0;
 				}
-				$wpdb->query("UPDATE $table SET code='" . $post_data['code'] . "', settings='$settings', status='" . $post_data['status'] . "', type='" . $post_data['type'] . "' WHERE id='" . $post_data['id'] . "' ");
+				$q = $wpdb->prepare("UPDATE $table SET code=%s, settings=%s, status=%s, type=%s WHERE id=%d ",
+						$post_data['code'], $settings, $post_data['status'], $post_data['type'], $post_data['id']
+				);
+				$wpdb->query($q);
 			 	return 1;
 			 }
 		}
@@ -5941,7 +6209,8 @@ if (!class_exists('Uap_Db')){
 			 if ($id){
 			 	global $wpdb;
 			 	$table = $wpdb->prefix . 'uap_coupons_code_affiliates';
-				$wpdb->query("DELETE FROM $table WHERE id=$id;");
+				$q = $wpdb->prepare("DELETE FROM $table WHERE id=%d ", $id);
+				$wpdb->query($q);
 			 }
 		}
 
@@ -5953,7 +6222,8 @@ if (!class_exists('Uap_Db')){
 			 if ($code){
 			 	global $wpdb;
 			 	$table = $wpdb->prefix . 'uap_coupons_code_affiliates';
-				$data = $wpdb->get_row("SELECT affiliate_id FROM $table WHERE code='$code';");
+				$q = $wpdb->prepare("SELECT affiliate_id FROM $table WHERE code=%s ", $code);
+				$data = $wpdb->get_row($q);
 				if ($data && !empty($data->affiliate_id)){
 					return $data->affiliate_id;
 				}
@@ -5969,7 +6239,8 @@ if (!class_exists('Uap_Db')){
 			 if ($code){
 			 	global $wpdb;
 			 	$table = $wpdb->prefix . 'uap_coupons_code_affiliates';
-				$data = $wpdb->get_row("SELECT * FROM $table WHERE code='$code';");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE code=%s ", $code);
+				$data = $wpdb->get_row($q);
 				if ($data){
 				 	$settings = (isset($data->settings)) ? unserialize($data->settings) : array();
 				 	$array = array(
@@ -6002,7 +6273,7 @@ if (!class_exists('Uap_Db')){
 			 $array = array();
 			 global $wpdb;
 			 $table = $wpdb->prefix . 'uap_coupons_code_affiliates';
-			 $data = $wpdb->get_results("SELECT * FROM $table ;");
+			 $data = $wpdb->get_results("SELECT * FROM $table;");
 			 if ($data){
 			 	foreach ($data as $object){
 			 		$array[] = (array)$object;
@@ -6018,6 +6289,7 @@ if (!class_exists('Uap_Db')){
 			 */
 			 $return = array();
 			 global $wpdb;
+			 $char = esc_sql($char);
 			 switch ($type){
 			 	case 'woo':
 					$data = $wpdb->get_results("SELECT post_title, ID
@@ -6064,7 +6336,8 @@ if (!class_exists('Uap_Db')){
 			 if ($affiliate_id){
 				global $wpdb;
 			 	$table = $wpdb->prefix . 'uap_coupons_code_affiliates';
-				$data = $wpdb->get_results("SELECT * FROM $table WHERE affiliate_id=$affiliate_id AND status=1;");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE affiliate_id=%d AND status=1;", $affiliate_id);
+				$data = $wpdb->get_results($q);
 				if ($data){
 					foreach ($data as $object){
 						$array[] = (array)$object;
@@ -6096,7 +6369,8 @@ if (!class_exists('Uap_Db')){
 			 if ($slug){
 			 	global $wpdb;
 				$table = $wpdb->base_prefix . 'usermeta';
-				$data = $wpdb->get_row("SELECT user_id FROM $table WHERE meta_key='uap_affiliate_custom_slug' AND meta_value='$slug' ;");
+				$q = $wpdb->prepare("SELECT user_id FROM $table WHERE meta_key='uap_affiliate_custom_slug' AND meta_value=%s ", $slug);
+				$data = $wpdb->get_row($q);
 				if ($data && !empty($data->user_id)){
 					return $this->get_affiliate_id_by_wpuid($data->user_id);
 				}
@@ -6110,6 +6384,8 @@ if (!class_exists('Uap_Db')){
 			 * @return boolean
 			 */
 			 if ($uid && $slug){
+				 $uid = esc_sql($uid);
+				 $slug = esc_sql($slug);
 				 /// first test if exists a username with this slug
 				 $exists = $this->check_username_into_users_table($slug);
 				 if (!$exists){
@@ -6190,7 +6466,8 @@ if (!class_exists('Uap_Db')){
 			 if ($username){
 				global $wpdb;
 				$table = $wpdb->base_prefix . 'users';
-				$data = $wpdb->get_row("SELECT ID FROM $table WHERE user_login='$username';");
+				$q = $wpdb->prepare("SELECT ID FROM $table WHERE user_login=%s ", $username);
+				$data = $wpdb->get_row($q);
 				if ($data && !empty($data->ID) ){
 				 	return TRUE;
 				}
@@ -6235,7 +6512,8 @@ if (!class_exists('Uap_Db')){
 			 	}
 				return 0;
 			 } else {
-			 	$data = $wpdb->get_results("SELECT * FROM $table WHERE meta_key='uap_affiliate_custom_slug' AND meta_value<>'' LIMIT $limit OFFSET $offset;");
+				$q = $wpdb->prepare("SELECT * FROM $table WHERE meta_key='uap_affiliate_custom_slug' AND meta_value<>'' LIMIT %d OFFSET %d ", $limit, $offset);
+			 	$data = $wpdb->get_results($q);
 				if ($data){
 					foreach ($data as $object){
 						if (!empty($object->meta_value)){
@@ -6392,6 +6670,7 @@ if (!class_exists('Uap_Db')){
 			 * @return none
 			 */
 			global $wpdb;
+			$code = esc_sql($code);
 			switch ($type){
 				case 'woo':
 					$table = $wpdb->base_prefix . 'posts';
@@ -6429,6 +6708,7 @@ if (!class_exists('Uap_Db')){
 			 */
 			 if ($code && $type){
 			 	global $wpdb;
+				$code = esc_sql($code);
 				switch ($type){
 					case 'woo':
 						$table = $wpdb->base_prefix . 'posts';
@@ -6464,7 +6744,8 @@ if (!class_exists('Uap_Db')){
 			 if ($transaction_id){
 			 	global $wpdb;
 				$table = $wpdb->prefix . 'uap_payments';
-				$data = $wpdb->get_row("SELECT id FROM $table WHERE transaction_id='$transaction_id';");
+				$q = $wpdb->prepare("SELECT id FROM $table WHERE transaction_id=%s ", $transaction_id);
+				$data = $wpdb->get_row($q);
 				if ($data && !empty($data->id)){
 					return $data->id;
 				}
@@ -6481,7 +6762,8 @@ if (!class_exists('Uap_Db')){
 			 if ($affiliate_id){
 			 	global $wpdb;
 				$table = $wpdb->prefix . 'uap_payments';
-				$data = $wpdb->get_results("SELECT transaction_id, amount FROM $table WHERE affiliate_id=$affiliate_id AND payment_type='wallet';");
+				$q = $wpdb->prepare("SELECT transaction_id, amount FROM $table WHERE affiliate_id=%d AND payment_type='wallet';", $affiliate_id);
+				$data = $wpdb->get_results($q);
 				if ($data){
 					foreach ($data as $object){
 						$transaction_id = $object->transaction_id;
@@ -6505,13 +6787,19 @@ if (!class_exists('Uap_Db')){
 			 */
 			 if ($type && $code){
 			 	global $wpdb;
+				$code = esc_sql($code);
 				switch ($type){
 					case 'woo':
 						if (class_exists('WC_Coupon')){
 							$object = new WC_Coupon($code);
+							if($object->is_valid()){
+								return TRUE;
+							}
+							/* //used in < uap 3.9
 							if ($object->usage_count==0){
 								return TRUE;
 							}
+							*/
 						}
 						break;
 					case 'edd':
@@ -6635,13 +6923,16 @@ if (!class_exists('Uap_Db')){
 			 if ($affiliate_id && $post_data){
 				 global $wpdb;
 				 $table = $wpdb->prefix . 'uap_reports';
-				 $exists = $wpdb->get_row("SELECT email FROM $table WHERE affiliate_id=$affiliate_id;");
+				 $q = $wpdb->prepare("SELECT email FROM $table WHERE affiliate_id=%d ", $affiliate_id);
+				 $exists = $wpdb->get_row($q);
 				 if ($exists && !empty($exists->email)){
 				 	 /// UPDATE
-				 	 $wpdb->query("UPDATE $table SET email='" . $post_data['email'] . "', period='" . $post_data['period'] . "' WHERE affiliate_id=$affiliate_id;");
+					 $q = $wpdb->prepare("UPDATE $table SET email=%s, period=%s WHERE affiliate_id=%d ", $post_data['email'], $post_data['period'], $affiliate_id);
+				 	 $wpdb->query($q);
 				 } else {
 				 	 /// SELECT
-				 	 $wpdb->query("INSERT INTO $table VALUES($affiliate_id, '" . $post_data['email'] . "', '" . $post_data['period'] . "', UNIX_TIMESTAMP());");
+					 $q = $wpdb->prepare("INSERT INTO $table VALUES(%d, %s, %s, UNIX_TIMESTAMP());", $affiliate_id, $post_data['email'], $post_data['period']);
+				 	 $wpdb->query($q);
 				 }
 				 return TRUE;
 			 }
@@ -6656,10 +6947,12 @@ if (!class_exists('Uap_Db')){
 			 if ($affiliate_id){
 				 global $wpdb;
 				 $table = $wpdb->prefix . 'uap_reports';
-				 $exists = $wpdb->get_row("SELECT email FROM $table WHERE affiliate_id=$affiliate_id;");
+				 $q = $wpdb->prepare("SELECT email FROM $table WHERE affiliate_id=%d ", $affiliate_id);
+				 $exists = $wpdb->get_row($q);
 				 if ($exists && !empty($exists->email)){
 				 	 /// UPDATE
-				 	 $wpdb->query("UPDATE $table SET last_sent=UNIX_TIMESTAMP() WHERE affiliate_id=$affiliate_id;");
+					 $q = $wpdb->prepare("UPDATE $table SET last_sent=UNIX_TIMESTAMP() WHERE affiliate_id=%d ", $affiliate_id);
+				 	 $wpdb->query($q);
 					 return TRUE;
 				 }
 			 }
@@ -6674,7 +6967,8 @@ if (!class_exists('Uap_Db')){
 			 if ($affiliate_id){
 				 global $wpdb;
 				 $table = $wpdb->prefix . 'uap_reports';
-				 $wpdb->query("DELETE FROM $table WHERE affiliate_id=$affiliate_id;");
+				 $q = $wpdb->prepare("DELETE FROM $table WHERE affiliate_id=%d ", $affiliate_id);
+				 $wpdb->query($q);
 			 }
 		}
 
@@ -6686,7 +6980,8 @@ if (!class_exists('Uap_Db')){
 			 if ($affiliate_id){
 				 global $wpdb;
 				 $table = $wpdb->prefix . 'uap_reports';
-				 $data = $wpdb->get_row("SELECT * FROM $table WHERE affiliate_id=$affiliate_id;");
+				 $q = $wpdb->prepare("SELECT * FROM $table WHERE affiliate_id=%d ", $affiliate_id);
+				 $data = $wpdb->get_row($q);
 				 if ($data){
 				 	$array = (array)$data;
 				 	return $array;
@@ -6704,12 +6999,14 @@ if (!class_exists('Uap_Db')){
 			 */
 			 if ($affiliate_id){
 				 global $wpdb;
+				 $affiliate_id = esc_sql($affiliate_id);
 				 $table = $wpdb->prefix . 'uap_reports';
 				 $exists = $wpdb->get_row("SELECT email FROM $table WHERE affiliate_id=$affiliate_id;");
 				 if ($exists && !empty($exists->email)){
-				 	/// we must do update
-				 	$wpdb->query("UPDATE $table SET email='$new_value' WHERE affiliate_id=$affiliate_id; ");
-				 	return TRUE;
+					 	/// we must do update
+	 				  $new_value = esc_sql($new_value);
+					 	$wpdb->query("UPDATE $table SET email='$new_value' WHERE affiliate_id=$affiliate_id; ");
+					 	return TRUE;
 				 }
 			 }
 			 return FALSE;
@@ -6769,7 +7066,8 @@ if (!class_exists('Uap_Db')){
 			 */
 			global $wpdb;
 			$table = $wpdb->prefix . 'uap_dashboard_notifications';
-			$wpdb->query("UPDATE $table SET value=value+1 WHERE type='$type';");
+			$q = $wpdb->prepare("UPDATE $table SET value=value+1 WHERE type=%s ", $type);
+			$wpdb->query($q);
 		}
 
 		public function reset_dashboard_notification($type=''){
@@ -6779,7 +7077,8 @@ if (!class_exists('Uap_Db')){
 			 */
 			global $wpdb;
 			$table = $wpdb->prefix . 'uap_dashboard_notifications';
-			$wpdb->query("UPDATE $table SET value=0 WHERE type='$type';");
+			$q = $wpdb->prepare("UPDATE $table SET value=0 WHERE type=%s ", $type);
+			$wpdb->query($q);
 		}
 
 		public function get_dashboard_notification_value($type=''){
@@ -6789,7 +7088,8 @@ if (!class_exists('Uap_Db')){
 			 */
 			global $wpdb;
 			$table = $wpdb->prefix . 'uap_dashboard_notifications';
-			$data = $wpdb->get_row("SELECT value FROM $table WHERE type='$type';");
+			$q = $wpdb->prepare("SELECT value FROM $table WHERE type=%s ", $type);
+			$data = $wpdb->get_row($q);
 			return (empty($data->value)) ? 0 : $data->value;
 		}
 
@@ -7111,7 +7411,8 @@ if (!class_exists('Uap_Db')){
 			 if ($referral_id){
 			 	global $wpdb;
 				$table = $wpdb->prefix . 'uap_referrals';
-			 	$data = $wpdb->get_row("SELECT reference, source FROM $table WHERE id=$referral_id;");
+				$q = $wpdb->prepare("SELECT reference, source FROM $table WHERE id=%d ", $referral_id);
+				$data = $wpdb->get_row($q);
 				if (!empty($data->reference) && !empty($data->source)){
 				 	$check = uap_get_active_services();
 				 	switch ($data->source){
@@ -7169,6 +7470,7 @@ if (!class_exists('Uap_Db')){
 			 if ($referral_id){
 			 	global $wpdb;
 				$table = $wpdb->prefix . 'uap_referrals';
+				$referral_id = esc_sql($referral_id);
 			 	$data = $wpdb->get_row("SELECT reference, source FROM $table WHERE id=$referral_id;");
 				if (!empty($data->reference) && !empty($data->source)){
 					$reference = $data->reference;
@@ -7180,41 +7482,64 @@ if (!class_exists('Uap_Db')){
 								$fields = explode(',', $fields_in_arr['uap_source_details_woo_fields_list']);
 								$woo = new WC_Order($reference);
 								if (in_array('email', $fields)){
-									$array['email'] = $woo->billing_email;
+										if (method_exists($woo, 'get_billing_email')){
+												$array['email'] = $woo->get_billing_email();
+										} else {
+												$array['email'] = $woo->billing_email;
+										}
+
 								}
 								if (in_array('first_name', $fields)){
-									$array['first_name'] = $woo->billing_first_name;
+										if (method_exists($woo, 'get_billing_first_name')){
+												$array['first_name'] = $woo->get_billing_first_name();
+										} else {
+												$array['first_name'] = $woo->billing_first_name;
+										}
 								}
 								if (in_array('last_name', $fields)){
-									$array['last_name'] = $woo->billing_last_name;
+										if (method_exists($woo, 'get_billing_last_name')){
+												$array['last_name'] = $woo->get_billing_last_name();
+										} else {
+												$array['last_name'] = $woo->billing_last_name;
+										}
 								}
 								if (in_array('order_date', $fields)){
-									$array['order_date'] = $woo->order_date;
+										if (method_exists($woo, 'get_date_created')){
+												$array['order_date'] = $woo->get_date_created();
+										} else {
+												$array['order_date'] = $woo->order_date;
+										}
 								}
 								if (in_array('order_amount', $fields)){
-									$array['order_amount'] = $woo->get_formatted_order_total();
+										if (method_exists($woo, 'get_formatted_order_total')){
+												$array['order_amount'] = $woo->get_formatted_order_total();
+										}
 								}
 								if (in_array('phone', $fields)){
-									$array['phone'] = $woo->billing_phone;
+										if (method_exists($woo, 'get_billing_phone')){
+												$array['phone'] = $woo->get_billing_phone();
+										} else {
+												$array['phone'] = $woo->billing_phone;
+										}
 								}
 								if (in_array('shipping_address', $fields)){
-									$array['shipping_address'] = $woo->get_formatted_shipping_address();
+										$array['shipping_address'] = $woo->get_formatted_shipping_address();
 								}
 								if (in_array('billing_address', $fields)){
-									$array['billing_address'] = $woo->get_formatted_billing_address();
+										$array['billing_address'] = $woo->get_formatted_billing_address();
 								}
 
 								if (in_array('cart_items', $fields)){
-									$array['cart_items'] = '';
-									$temp_arr = $woo->get_items();
-									if ($temp_arr){
-										foreach ($temp_arr as $item){
-											$cart_arr[] = $item['name'];
+										$array['cart_items'] = '';
+										$temp_arr = $woo->get_items();
+										if ($temp_arr){
+											foreach ($temp_arr as $item){
+												$cart_arr[] = $item['name'];
+											}
+											if (!empty($cart_arr)){
+												$array['cart_items'] = implode(', ', $cart_arr);
+											}
 										}
-										if (!empty($cart_arr)){
-											$array['cart_items'] = implode(', ', $cart_arr);
-										}
-									}
 								}
 							}
 							break;
@@ -7489,7 +7814,8 @@ if (!class_exists('Uap_Db')){
 					return -1;
 				} else {
 					/// check the limit
-					$data = $wpdb->get_row("SELECT COUNT(id) as c FROM $table WHERE affiliate_id={$post_data['affiliate_id']}");
+					$q = $wpdb->prepare("SELECT COUNT(id) as c FROM $table WHERE affiliate_id=%d ", $post_data['affiliate_id']);
+					$data = $wpdb->get_row($q);
 					$the_limit = get_option('uap_simple_links_limit');
 					if (!empty($data) && !empty($data->c) && $data->c>=$the_limit){
 						return 0;
@@ -7511,7 +7837,8 @@ if (!class_exists('Uap_Db')){
 			global $wpdb;
 			if ($id){
 				$table = $wpdb->prefix . 'uap_ref_links';
-				$q = $wpdb->query("UPDATE $table SET status=1 WHERE id=$id;");
+				$q = $wpdb->prepare("UPDATE $table SET status=1 WHERE id=%d ", $id);
+				$q = $wpdb->query($q);
 				return TRUE;
 			}
 			return FALSE;
@@ -7586,9 +7913,13 @@ if (!class_exists('Uap_Db')){
 				$q .= " AND " . $where;
 			}
 			if ($order_type && $order_by){
+				$order_by = esc_sql($order_by);
+				$order_type = esc_sql($order_type);
 				$q .= " ORDER BY " . $order_by . " " . $order_type;
 			}
 			if ($limit>-1 && $offset>-1){
+				$limit = esc_sql($limit);
+				$offset = esc_sql($offset);
 				$q .= " LIMIT " . $limit . " OFFSET " . $offset;
 			}
 			$data = $wpdb->get_results($q);
@@ -7611,7 +7942,7 @@ if (!class_exists('Uap_Db')){
 			global $wpdb;
 			$array = array();
 			$table = $wpdb->prefix . 'uap_ref_links';
-			$q = "SELECT id, affiliate_id, url, status FROM $table WHERE affiliate_id=$affiliate_id;";
+			$q = $wpdb->prepare("SELECT id, affiliate_id, url, status FROM $table WHERE affiliate_id=%d ", $affiliate_id);
 			$data = $wpdb->get_results($q);
 			if ($data){
 				foreach ($data as $object){
@@ -7849,18 +8180,23 @@ if (!class_exists('Uap_Db')){
 					$userdata[$key] = '';
 				}
 			}
-			return $wpdb->query("INSERT INTO $table VALUES(
-															'{$userdata['ID']}',
-															'{$userdata['user_login']}',
-															'{$userdata['user_pass']}',
-															'{$userdata['user_nicename']}',
-															'{$userdata['user_email']}',
-															'{$userdata['user_url']}',
-															'{$userdata['user_registered']}',
-															'{$userdata['user_activation_key']}',
-															'{$userdata['user_status']}',
-															'{$userdata['display_name']}'
-			);");
+			$q = $wpdb->prepare("INSERT INTO $table VALUES(
+															%d,
+															%s,
+															%s,
+															%s,
+															%s,
+															%s,
+															%s,
+															%s,
+															%s,
+															%s
+			);", $userdata['ID'], $userdata['user_login'], $userdata['user_pass'],
+			$userdata['user_nicename'], $userdata['user_email'], $userdata['user_url'],
+			$userdata['user_registered'], $userdata['user_activation_key'], $userdata['user_status'],
+			$userdata['display_name']
+			);
+			return $wpdb->query($q);
 		}
 
 
@@ -7978,6 +8314,12 @@ if (!class_exists('Uap_Db')){
 				$first = key($data);
 			}
 			return isset($first) ? $first : '';
+		}
+
+		public function does_post_exists($id=0){
+				global $wpdb;
+				$q = $wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE ID=%d", $id);
+				return $wpdb->get_var($q);
 		}
 
 

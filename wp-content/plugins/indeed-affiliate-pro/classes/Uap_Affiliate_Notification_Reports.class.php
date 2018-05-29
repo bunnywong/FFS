@@ -1,6 +1,6 @@
 <?php
 if (!class_exists('Uap_Affiliate_Notification_Reports')):
-	
+
 class Uap_Affiliate_Notification_Reports{
 	/**
 	 * @var array
@@ -12,25 +12,25 @@ class Uap_Affiliate_Notification_Reports{
 	private static $global_settings_reports = array();
 	/**
 	 * @var array
-	 */	
+	 */
 	private static $global_settings_admin_referral_notifications = array();
-	
-	
+
+
 	/**
 	 * @param none
 	 * @return none
 	 */
 	public function __construct(){
-		global $indeed_db; 
-		if (empty(self::$global_settings_single_notf)){			
-			self::$global_settings_single_notf = $indeed_db->return_settings_from_wp_option('referral_notifications');	
-		}	 
-		if (empty(self::$global_settings_admin_referral_notifications)){			
-			self::$global_settings_admin_referral_notifications = $indeed_db->return_settings_from_wp_option('admin_referral_notifications');	
-		}			
-		if (empty(self::$global_settings_reports)){			
-			self::$global_settings_reports = $indeed_db->return_settings_from_wp_option('periodically_reports');	
-		}		 
+		global $indeed_db;
+		if (empty(self::$global_settings_single_notf)){
+			self::$global_settings_single_notf = $indeed_db->return_settings_from_wp_option('referral_notifications');
+		}
+		if (empty(self::$global_settings_admin_referral_notifications)){
+			self::$global_settings_admin_referral_notifications = $indeed_db->return_settings_from_wp_option('admin_referral_notifications');
+		}
+		if (empty(self::$global_settings_reports)){
+			self::$global_settings_reports = $indeed_db->return_settings_from_wp_option('periodically_reports');
+		}
 	}
 
 	public function report_constants(){
@@ -47,7 +47,7 @@ class Uap_Affiliate_Notification_Reports{
 	 					'{refuse_referrals}' => __('Refuse Referrals', 'uap'),
 		 );
 	}
-	
+
 	public function notification_constants(){
 		/*
 		 * @param none
@@ -64,7 +64,7 @@ class Uap_Affiliate_Notification_Reports{
 	 					'{referral_status}' => __('Referral Status', 'uap'),
 		);
 	}
-		
+
 	public function report_referrals_message($affiliate_id=0, $user_email='', $interval=0){
 		/*
 		 * @param int
@@ -73,10 +73,10 @@ class Uap_Affiliate_Notification_Reports{
 		 if ($affiliate_id && $interval){
 		 	global $indeed_db;
 			$uid = $indeed_db->get_uid_by_affiliate_id($affiliate_id);
-	
-		 	$message = self::$global_settings_reports['uap_periodically_reports_content'];	
+
+		 	$message = self::$global_settings_reports['uap_periodically_reports_content'];
 			$subject = self::$global_settings_reports['uap_periodically_reports_subject'];
-			
+
 			/// SELECT REFERRALS by interval
 			$end_time = date('Y-m-d', time());
 			$start_time = time() - ($interval * 24 * 3600);
@@ -89,8 +89,8 @@ class Uap_Affiliate_Notification_Reports{
 	 					'{verified_referrals}' => $referrals_data['verified_referrals'],
 	 					'{unverified_referrals}' => $referrals_data['unverified_referrals'],
 	 					'{refuse_referrals}' => $referrals_data['refuse_referrals'],
-			);			
-			
+			);
+
 			/// REFERRAL CONSTANTS
 			foreach ($constants as $key => $value){
 				if (strpos($message, $key)!==FALSE){
@@ -98,20 +98,20 @@ class Uap_Affiliate_Notification_Reports{
 				}
 				if (strpos($subject, $key)!==FALSE){
 					$subject = str_replace($key, $value, $subject);
-				}				
+				}
 			}
-			
+
 			$message = uap_replace_constants($message, $uid);
 			$subject = uap_replace_constants($subject, $uid);
-						
-		 	$sent = $this->send_email($uid, $message, $subject, $user_email);				
+
+		 	$sent = $this->send_email($uid, $message, $subject, $user_email);
 			if ($sent){
 				/// update time in db
 				$indeed_db->update_affiliate_reports_last_sent($affiliate_id);
-			} 
+			}
 		}
 	}
-	
+
 	public function send_single_referral_notification($affiliate_id=0, $referral_id=0, $referral_type=''){
 		/*
 		 * @param int, int
@@ -119,11 +119,11 @@ class Uap_Affiliate_Notification_Reports{
 		 */
 		 if ($affiliate_id && $referral_id){
 		 	 global $indeed_db;
-			 
+
 			 /// where to send
 			 $send_to_affiliate = self::$global_settings_single_notf['uap_referral_notifications_enable'];
 			 $send_to_admin = self::$global_settings_admin_referral_notifications['uap_admin_referral_notifications_enable'];
-			 
+
 			 $uid = $indeed_db->get_uid_by_affiliate_id($affiliate_id);
 			 /// CHECK REFERRAL TYPE
 			 $affiliate_referral_type = get_user_meta($uid, 'uap_notifications_on_every_referral_types', TRUE); /// if this option is empty, means that affiliate wants to get notification on every referral
@@ -132,25 +132,25 @@ class Uap_Affiliate_Notification_Reports{
 				 if ($types){
 				 	if (!in_array($referral_type, $types)){
 				 		/// AFFILIATE DON'T WANT NOTIFICATION FROM THIS KIND OF REFERRALS
-				 		return; 
+				 		return;
 				 	}
 				 }
 			 }
-			
+
 			/// MESSAGE & SUBJECT
 			$message = '';
 			$subject = '';
 			$message_admin = '';
 			$subject_admin = '';
 			if ($send_to_affiliate){
-			 	$message = self::$global_settings_single_notf['uap_referral_notification_content'];		
-				$subject = self::$global_settings_single_notf['uap_referral_notification_subject'];									
+			 	$message = self::$global_settings_single_notf['uap_referral_notification_content'];
+				$subject = self::$global_settings_single_notf['uap_referral_notification_subject'];
 			}
 			if ($send_to_admin){
 				$message_admin = self::$global_settings_admin_referral_notifications['uap_admin_referral_notification_content'];
 				$subject_admin = self::$global_settings_admin_referral_notifications['uap_admin_referral_notification_subject'];
 			}
-						
+
 			$referral_values = $indeed_db->get_referral($referral_id);
 			$constants = array(
 	 					'{referral_amount}' => $referral_values['amount'] . $referral_values['currency'],
@@ -167,17 +167,17 @@ class Uap_Affiliate_Notification_Reports{
 					$constants['{referral_status}'] = __('Refuse', 'uap');
 					break;
 				case 1:
-					$constants['{referral_status}'] = __('Unverified', 'uap');					
+					$constants['{referral_status}'] = __('Unverified', 'uap');
 					break;
 				case 2:
-					$constants['{referral_status}'] = __('Verified', 'uap');					
+					$constants['{referral_status}'] = __('Verified', 'uap');
 					break;
 			}
 			/// {WOOCOMMERCE_ORDER_DETAILS}
 			if ($referral_values['source']=='woo'){
 				$constants['{WOOCOMMERCE_ORDER_DETAILS}'] = $this->getOrderDetails($referral_values['reference']);
 			}
-			
+
 			/// REFERRAL CONSTANTS
 			foreach ($constants as $key => $value){
 				if (strpos($message, $key)!==FALSE){
@@ -193,23 +193,23 @@ class Uap_Affiliate_Notification_Reports{
 					$subject_admin = str_replace($key, $value, $subject_admin);
 				}
 			}
-			
+
 			$message = uap_replace_constants($message, $uid);
 			$subject = uap_replace_constants($subject, $uid);
 			$message_admin = uap_replace_constants($message_admin, $uid);
 			$subject_admin = uap_replace_constants($subject_admin, $uid);
-			
+
 			/// notification to user
 			if ($send_to_affiliate){
-		 		$this->send_email($uid, $message, $subject);				
+		 		$this->send_email($uid, $message, $subject);
 			}
-			
+
 			/// notification to admin
 			if ($send_to_admin){
 				$admin_email = get_option('admin_email');
-		 		$this->send_email($uid, $message_admin, $subject_admin, $admin_email, TRUE);				
+		 		$this->send_email($uid, $message_admin, $subject_admin, $admin_email, TRUE);
 			}
-			
+
 		 }
 	}
 
@@ -229,15 +229,15 @@ class Uap_Affiliate_Notification_Reports{
 		 	$from_name = get_option("blogname");
 		 }
 		 if (empty($user_email)){
-			 $user_email = $indeed_db->get_email_by_uid($uid);		 	
+			 $user_email = $indeed_db->get_email_by_uid($uid);
 		 }
 		 $message = stripslashes(htmlspecialchars_decode(uap_format_str_like_wp($message)));
 		 $message = "<html><head></head><body>" . $message . "</body></html>";
-		 
+
 		 if ($subject && $message && $user_email){
 			$headers[] = "From: $from_name <$from_email>";
 			$headers[] = 'Content-Type: text/html; charset=UTF-8';
-			$sent = wp_mail($user_email, $subject, $message, $headers);				
+			$sent = wp_mail($user_email, $subject, $message, $headers);
 			return $sent;
 		}
 		return FALSE;
@@ -251,6 +251,11 @@ class Uap_Affiliate_Notification_Reports{
 	private function getOrderDetails($woo_order_id=0){
 		$return = '';
 		if ($woo_order_id){
+			global $indeed_db;
+			$does_post_exists = $indeed_db->does_post_exists($woo_order_id);
+			if (empty($does_post_exists)){
+					return;
+			}
 			if (!class_exists('WC_Order')){
 				return;
 			}
@@ -261,9 +266,9 @@ class Uap_Affiliate_Notification_Reports{
 			$string[] = __('Last name: ', 'uap') . $woo->billing_last_name;
 			$string[] = __('Order date: ', 'uap') .  $woo->order_date;
 			$string[] = __('Order Amount: ', 'uap') . $woo->get_formatted_order_total();
-			$string[] = __('Phone: ', 'uap') . $woo->billing_phone;				
-			$string[] = __('Shipping Address: ', 'uap') . '<div>' . $woo->get_formatted_shipping_address() . '</div>';	
-			$string[] = __('Billing Address: ', 'uap') . '<div>' . $woo->get_formatted_billing_address() . '</div>';	
+			$string[] = __('Phone: ', 'uap') . $woo->billing_phone;
+			$string[] = __('Shipping Address: ', 'uap') . '<div>' . $woo->get_formatted_shipping_address() . '</div>';
+			$string[] = __('Billing Address: ', 'uap') . '<div>' . $woo->get_formatted_billing_address() . '</div>';
 			$temp_arr = $woo->get_items();
 			$cart_items = '';
 			if ($temp_arr){
@@ -271,14 +276,14 @@ class Uap_Affiliate_Notification_Reports{
 					$cart_items .= '<div>' . $item['name'] . ' * ' . $item['qty'] . '</div>';
 				}
 			}
-			$string[] = __('Cart Items: ', 'uap') . $cart_items;					
+			$string[] = __('Cart Items: ', 'uap') . $cart_items;
 			foreach ($string as $str){
 				$return .= '<div>' . $str . '</div>';
-			}			
+			}
 		}
 		return $return;
 	}
-	
+
 }
-	
+
 endif;

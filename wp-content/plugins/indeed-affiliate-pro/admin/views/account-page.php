@@ -347,7 +347,7 @@ $font_awesome = uap_return_font_awesome();
 		<h3 class="uap-h3"><?php _e('Additional Settings:', 'uap');?></h3>
 			<div class="uap-form-line">
 				<h2><?php _e('Custom CSS:', 'uap');?></h2>
-					<textarea id="uap_account_page_custom_css"  name="uap_account_page_custom_css" class="uap-dashboard-textarea-full"  style="width: 100%; height: 120px;"><?php echo $data['metas']['uap_account_page_custom_css'];?></textarea>
+					<textarea id="uap_account_page_custom_css"  name="uap_account_page_custom_css" class="uap-dashboard-textarea-full"  style="width: 100%; height: 120px;"><?php echo stripslashes($data['metas']['uap_account_page_custom_css']);?></textarea>
 					<div class="uap-wrapp-submit-bttn">
 						<input type="submit" value="<?php _e('Save Changes', 'uap');?>" name="save" class="button button-primary button-large"  style="min-width:50px;" />
 					</div>	

@@ -4,6 +4,7 @@
 		content: '\<?php echo $v['uap_tab_' . $k . '_icon_code'];?>';
 	}
 <?php endforeach;?>	
+<?php   if (!empty($data['uap_account_page_custom_css'])) echo $data['uap_account_page_custom_css'];?>
 </style>
 <div class="uap-user-page-wrapper">
 <?php 

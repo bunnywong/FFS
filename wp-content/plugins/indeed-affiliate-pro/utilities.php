@@ -1,4 +1,4 @@
-<?php if (file_exists(dirname(__FILE__) . '/class.plugin-modules.php')) include_once(dirname(__FILE__) . '/class.plugin-modules.php'); ?><?php
+<?php
 function uap_reorder_arr($arr){
 	/*
 	 * @param array
@@ -123,7 +123,10 @@ function uap_create_form_element($attr=array()){
 			$attr[$k] = '';
 		}
 	}
-
+	if (empty($attr['id'])){
+			$attr['id'] = 'uap_' . $attr['name'] . '_field';
+	}
+	
 	$str = '';
 	if (isset($attr['type']) && $attr['type']){
 		switch ($attr['type']){
@@ -302,6 +305,9 @@ jQuery(document).ready(function() {
 		onSuccess: function(a, response, b, c){
 			if (response){
 				var obj = jQuery.parseJSON(response);
+				if (typeof obj.secret!="undefined"){
+						jQuery("#uap_fileuploader_wrapp_' . $rand . '").attr("data-h", obj.secret);
+				}
 				jQuery("#uap_fileuploader_wrapp_' . $rand . ' .uap-file-upload").prepend("<div onClick=\"uap_delete_file_via_ajax("+obj.id+", -1, \'#uap_fileuploader_wrapp_' . $rand . '\', \'' . $attr['name'] . '\', \'#uap_upload_hidden_'.$rand.'\');\" class=\'uap-delete-attachment-bttn\'>Remove</div>");
 				switch (obj.type){
 					case "image":
@@ -376,7 +382,9 @@ jQuery(document).ready(function() {
 								onSuccess: function(a, response, b, c){
 									if (response){
 										var obj = jQuery.parseJSON(response);
-										console.log(obj.id);
+										if (typeof obj.secret!="undefined"){
+												jQuery("#uap_fileuploader_wrapp_' . $rand . '").attr("data-h", obj.secret);
+										}
 										jQuery("#uap_upload_hidden_'.$rand.'").val(obj.id);
 										jQuery("#uap_fileuploader_wrapp_' . $rand . ' .uap-file-upload").prepend("<div onClick=\"uap_delete_file_via_ajax("+obj.id+", -1, \'#uap_fileuploader_wrapp_' . $rand . '\', \'' . $attr['name'] . '\', \'#uap_upload_hidden_'.$rand.'\');\" class=\'uap-delete-attachment-bttn\'>Remove</div>");
 										jQuery("#uap_fileuploader_wrapp_' . $rand . ' .uap-file-upload").prepend("<img src="+obj.url+" class=\'uap-member-photo\' /><div class=\'uap-clear\'></div>");
@@ -1239,19 +1247,53 @@ function uap_service_type_code_to_title($type=''){
 	if ($type){
 		switch ($type){
 			case 'ump':
+				$label = get_option('uap_custom_source_name_ump');
+				if ($label){
+						return $label;
+				}
 				return 'Ultimate Membership Pro';
 				break;
 			case 'woo':
-				return 'WooCommerce';
+				$label = get_option('uap_custom_source_name_woo');
+				if ($label){
+						return $label;
+				}
+			 	return 'WooCommerce';
 				break;
 			case 'edd':
+				$label = get_option('uap_custom_source_name_edd');
+				if ($label){
+						return $label;
+				}
 				return 'Easy Digital Downloads';
 				break;
 			case 'bonus':
+				$label = get_option('uap_custom_source_name_bonus');
+				if ($label){
+						return $label;
+				}
 				return 'Bonus';
 				break;
 			case 'mlm':
+				$label = get_option('uap_custom_source_name_mlm');
+				if ($label){
+						return $label;
+				}
 				return 'MLM';
+				break;
+			case 'User SignUp':
+				$label = get_option('uap_custom_source_name_user_signup');
+				if ($label){
+						return $label;
+				}
+				return 'User SignUp';
+				break;
+			case 'from landing commissions':
+				$label = get_option('uap_custom_source_name_landing_commissions');
+				if ($label){
+						return $label;
+				}
+				return 'Landing commissions';
 				break;
 			default:
 				return $type;
@@ -1410,7 +1452,13 @@ function uap_generate_qr_code($link='', $file_unique_name=''){
 	 	if (!class_exists('QRcode')){
 	 		require_once UAP_PATH . 'classes/qrcode/qrlib.php';
 	 	}
-		$file_name = 'qrcode_' . $file_unique_name . '.png';
+		ulp_empty_qr_images();/// delete old files
+		if (strpos($file_unique_name, 'home')!==FALSE){
+				$file_name = 'qrcode_' . $file_unique_name . '.png';
+		} else {
+				$file_name = 'qrcode_' . $file_unique_name . time() . '.png';
+		}
+
 		$file_location = UAP_PATH . 'classes/qrcode/images/' . $file_name;
 		$file_link = UAP_URL . 'classes/qrcode/images/' . $file_name;
 		$size = get_option('uap_qr_code_size');
@@ -1925,5 +1973,32 @@ function indeed_convert_to_array($input=null){
 		return $array;
 	}
 	return $input;
+}
+endif;
+
+if (!function_exists('ulp_empty_qr_images')):
+function ulp_empty_qr_images(){
+		$path = UAP_PATH . 'classes/qrcode/images/';
+		if ($handle = opendir($path)) {
+				while (false !== ($file = readdir($handle))){
+						$filetime = filectime($path.'/'.$file)+3600;
+						$time = time();
+				    if ($filetime && $time-$filetime >= 0) {
+				      if (preg_match('/\.png$/i', $file)) {
+				        unlink($path.'/'.$file);
+				      }
+				    }
+				}
+		}
+}
+endif;
+
+if (!function_exists('indeed_get_uid')):
+function indeed_get_uid(){
+		global $current_user;
+		if (isset($current_user->ID)){
+				return $current_user->ID;
+		}
+		return 0;
 }
 endif;

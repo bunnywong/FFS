@@ -2576,7 +2576,7 @@ if (!class_exists('Uap_Main_Admin')){
 				$indeed_db->save_settings_wp_option('bonus_on_rank', $_POST);
 				if (isset($_POST['bonus_ranks_value'])){
 					foreach ($_POST['bonus_ranks_value'] as $id=>$value){
-						$indeed_db->update_rank_column('bonus', $id, $value);
+						$indeed_db->update_rank_column_force_empty('bonus', $id, $value);
 					}
 				}
 			}
@@ -3018,7 +3018,10 @@ if (!class_exists('Uap_Main_Admin')){
 				wp_enqueue_style('uap_main_public_style', UAP_URL . 'assets/css/main_public.css');
 				wp_enqueue_style('uap_templates', UAP_URL . 'assets/css/templates.css');
 			}
-			wp_enqueue_style('uap_jquery-ui.min.css', UAP_URL . 'assets/css/jquery-ui.min.css');
+			if (!isset($_GET['page']) || $_GET['page']!='et_divi_options'){
+				wp_enqueue_style('uap_jquery-ui.min.css', UAP_URL . 'assets/css/jquery-ui.min.css');
+			}
+
 			wp_enqueue_style('uap_select2_style', UAP_URL . 'assets/css/select2.min.css' );
 			wp_enqueue_script('jquery');
 			wp_enqueue_media();
@@ -3245,4 +3248,3 @@ if (!class_exists('Uap_Main_Admin')){
 
 	}
 }
-

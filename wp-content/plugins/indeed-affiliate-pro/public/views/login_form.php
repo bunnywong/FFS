@@ -7,7 +7,7 @@ function uap_print_form_login($meta_arr){
 	 */
 	$str = '';
 	if($meta_arr['uap_login_custom_css']){
-		$str .= '<style>'.$meta_arr['uap_login_custom_css'].'</style>';
+		$str .= '<style>'. stripslashes($meta_arr['uap_login_custom_css']).'</style>';
 	}
 	
 	$user_field_id = 'uap_login_username';

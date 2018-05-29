@@ -48,6 +48,8 @@ class Uap_Change_Ranks{
 				}
 			}
 
+			$ranks = uap_reorder_ranks($ranks);
+
 			foreach ($ranks as $key=>$object){ /// LOOP THROUGH RANKS
 				if (!empty($object->achieve)){
 					$rank_id = $object->id;

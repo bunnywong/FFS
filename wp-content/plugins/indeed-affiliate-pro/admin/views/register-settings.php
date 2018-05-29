@@ -173,7 +173,7 @@
 					<div class="inside">		
 						<div>
 							<textarea name="uap_register_custom_css" id="uap_register_custom_css" class="uap-dashboard-textarea" onBlur="uapRegisterLockerPreview();"><?php 
-							echo $data['metas']['uap_register_custom_css'];
+							echo stripslashes($data['metas']['uap_register_custom_css']);
 							?></textarea>
 						</div>
 						<div style="margin-top: 15px;">

@@ -6,10 +6,10 @@
 <?php endif;?>
 
 <div class="uap-row">
-		<div class="uapcol-md-2">
+		<div class="uapcol-md-2 uap-account-payments-tab1">
 			<div class="uap-account-no-box"><div class="uap-account-no-box-inside"><div class="uap-count"><?php echo uap_format_price_and_currency($data['currency'], $data['stats']['paid_payments_value']);?></div><div class="uap-detail"><?php _e('Total Transactions Amount', 'uap');?></div></div></div>
 		</div>	
-		<div class="uapcol-md-2">
+		<div class="uapcol-md-2 uap-account-payments-tab2">
 			<div class="uap-account-no-box"><div class="uap-account-no-box-inside"><div class="uap-count"><?php echo $data['stats']['payments']?></div><div class="uap-detail"><?php _e('Total Transactions', 'uap');?></div></div></div>
 		</div>
 	</div>

@@ -45,7 +45,7 @@
 					<th><?php _e('Status', 'uap');?></th>	
 				</tr>
 			</tfoot>			
-		<?php foreach ($data['listing_items'] as $k=>$array):?>
+		<?php $i = 0; foreach ($data['listing_items'] as $k=>$array):?>
 			<tr onmouseover="uap_dh_selector('#aff_<?php echo $array['id'];?>', 1);" onmouseout="uap_dh_selector('#aff_<?php echo $array['id'];?>', 0);" class="<?php if ($i%2==0) echo 'alternate';?>">
 				<th><?php 
 					echo $array['code'];?>
@@ -58,7 +58,7 @@
 				<th><?php if ($array['status']) _e('Enabled');
 				else _e('Disabled');?></th>	
 			</tr>			
-		<?php endforeach;?>
+		<?php $i++; endforeach;?>
 		</table>
 	<?php endif;?>
 </div>		

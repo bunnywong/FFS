@@ -76,7 +76,7 @@ class Envato_marketplaces {
       if ( ! isset($this->api_key) ) exit('You have not set an api key yet. $class->set_api_key(key)');
       if (! isset($set) ) return 'Missing parameters';
 
-      $url = "http://marketplace.envato.com/api/edge/$user_name/$this->api_key/$set";
+      $url = "https://marketplace.envato.com/api/edge/$user_name/$this->api_key/$set";
       if ( !is_null($purchase_code) ) $url .= ":$purchase_code";
       $url .= '.json';
 
@@ -406,6 +406,7 @@ class Envato_marketplaces {
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
       curl_setopt($ch, CURLOPT_USERAGENT, "azzaroco_indeed_membership_pro");
       $data = curl_exec($ch);
+	 
       curl_close($ch);
       $data = json_decode($data);
       return $data; // string or null

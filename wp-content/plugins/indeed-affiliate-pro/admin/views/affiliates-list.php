@@ -95,8 +95,9 @@
 								<th><?php _e('Name', 'uap');?></th>
 								<th style="width:8%;"><?php _e('E-mail', 'uap');?></th>
 								<th><?php _e('Rank', 'uap');?></th>
+								<th><?php _e('Visits', 'uap');?></th>
+								<th><?php _e('Converted', 'uap');?></th>
 								<th style="width: 7%;"><?php _e('Referrals', 'uap');?></th>
-								<!--th><?php _e('Visits', 'uap');?></th -->
 								<th><?php _e('Paid Amount', 'uap');?></th>
 								<th><?php _e('UnPaid Amount', 'uap');?></th>								
 								<th><?php _e('Wp Role', 'uap');?></th>	
@@ -115,8 +116,9 @@
 								<th><?php _e('Name', 'uap');?></th>
 								<th><?php _e('E-mail', 'uap');?></th>
 								<th><?php _e('Rank', 'uap');?></th>
+								<th><?php _e('Visits', 'uap');?></th>
+								<th><?php _e('Converted', 'uap');?></th>
 								<th><?php _e('Referrals', 'uap');?></th>
-								<!--th><?php _e('Visits', 'uap');?></th -->
 								<th><?php _e('Paid Amount', 'uap');?></th>
 								<th><?php _e('UnPaid Amount', 'uap');?></th>
 								<th><?php _e('Wp Role', 'uap');?></th>		
@@ -194,7 +196,17 @@
 							<td><?php echo $arr['email'];?></td>
 							<?php $style = (isset($arr['rank_color'])) ? 'background-color:#' . $arr['rank_color'] : 'background-color:#c9c9c9;';?>
 							<td><div class="rank-type-list" style="<?php echo $style;?>"><?php echo $arr['rank_label'];?></div></td>
-							<td>
+							
+							<td class="uap-affiliate-list-counts">
+								<div><?php echo @$arr['stats']['visits'];?></div>
+								<?php if (!empty($arr['stats']['visits'])): ?>
+									<a href="<?php echo $data['base_visits_url'] . '&affiliate_id=' . $id;?>"><?php _e('View', 'uap');?></a>
+								<?php endif;?>
+							</td>
+                            <td class="uap-affiliate-list-counts">
+								<div><?php echo @$arr['stats']['converted'];?></div>
+                            </td>    
+                            <td class="uap-affiliate-list-counts">
 								<div>
 									<?php echo @$arr['stats']['referrals'];?>	
 								</div>
@@ -202,19 +214,13 @@
 									<a href="<?php echo $data['base_referrals_url'] . '&affiliate_id=' . $id;?>"><?php _e('View', 'uap');?></a>
 								<?php endif;?>
 							</td>
-							<!--td>
-								<div><?php echo @$arr['stats']['visits'];?></div>
-								<?php if (!empty($arr['stats']['visits'])): ?>
-									<a href="<?php echo $data['base_visits_url'] . '&affiliate_id=' . $id;?>"><?php _e('View', 'uap');?></a>
-								<?php endif;?>
-							</td -->
-							<td>
+							<td class="uap-affiliate-list-counts">
 								<div><?php echo uap_format_price_and_currency($currency, @$arr['stats']['paid_payments_value']);?></div>
 								<?php if (!empty($arr['stats']['paid_payments_value'])): ?>
 									<a href="<?php echo $data['base_paid_url'] . '&affiliate=' . $id;?>"><?php _e('View', 'uap');?></a>
 								<?php endif;?>	
 							</td>
-							<td>
+							<td class="uap-affiliate-list-counts">
 								<strong style="color: #9b4449;"><?php echo uap_format_price_and_currency($currency, @$arr['stats']['unpaid_payments_value']);?></strong>
 								<?php if (!empty($arr['stats']['unpaid_payments_value'])):?>
 									<div><a href="<?php echo $data['base_unpaid_url'] . '&affiliate=' . $id;?>"><?php _e('Proceed', 'uap');?></a> | <a href="<?php echo $data['base_pay_now'] . '&affiliate=' . $id;?>"><?php _e('Pay All', 'uap');?></a></div>

@@ -1020,8 +1020,9 @@ background: #fff;
 	text-align:center;
 }
 .uap-user-page-content select{
-	padding-top:0px;
-	padding-bottom:0px;
+	/*padding-top:0px;
+	padding-bottom:0px;*/
+	box-sizing:content-box;
 }
  .uap-user-page-content input[type="submit"]{
  	background: #75c37d;

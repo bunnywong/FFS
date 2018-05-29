@@ -139,7 +139,15 @@ if (!class_exists('Uap_Login')){
 					}
 				}
 			}
-			
+			if($user->get_error_message() == 'Pending User'){
+				wp_clear_auth_cookie();//logout
+				do_action( 'wp_logout' );
+				nocache_headers();
+						
+				$url = add_query_arg( array('uap_login_pending' => 'true'), $url );
+				wp_redirect( $url );
+				exit();
+			}
 			//===================== LOGIN FAILD
 			$url = add_query_arg( array('uap_login_fail'=>'true'), $url );
 			wp_redirect( $url );

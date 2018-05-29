@@ -37,7 +37,7 @@ function uap_delete_notification_confirm(i){
 	if (c){
 		jQuery('#delete_notification_id').val(i);
 		jQuery('#form_notification').submit();
-	}	
+	}
 }
 
 function open_media_up(target){
@@ -65,7 +65,7 @@ function open_media_up(target){
 }
 
 jQuery(document).ready(function(){
-	
+
 	jQuery('#uap-register-fields-table tbody').sortable({
 		 update: function(e, ui) {
 		        jQuery('#uap-register-fields-table tbody tr').each(function (i, row) {
@@ -75,7 +75,7 @@ jQuery(document).ready(function(){
 		        });
 		    }
 	});
-	
+
 	jQuery('#uap_reorder_menu_items tbody').sortable({
 		 update: function(e, ui) {
 		        jQuery('#uap_reorder_menu_items tbody tr').each(function (i, row) {
@@ -84,13 +84,13 @@ jQuery(document).ready(function(){
 		        });
 		 }
 	});
-	
+
 });
 
 function uap_register_fields(v){
-	jQuery('#uap-register-field-values').fadeOut(200);	
+	jQuery('#uap-register-field-values').fadeOut(200);
 	jQuery('#uap-register-field-plain-text').fadeOut(200);
-	jQuery('#uap-register-field-conditional-text').fadeOut(200);	
+	jQuery('#uap-register-field-conditional-text').fadeOut(200);
 	if (v=='select' || v=='checkbox' || v=='radio' || v=='multi_select'){
 		jQuery('#uap-register-field-values').fadeIn(200);
 	} else if (v=='plain_text'){
@@ -105,7 +105,7 @@ function uap_add_new_register_field_value(){
 	s += '<input type="text" name="values[]" value=""/> ';
 	s += '<i class="fa-uap fa-remove-uap" style="cursor: pointer;" onclick="jQuery(this).parent().remove();"></i>';
 	s += '<i class="fa-uap fa-arrows-uap"></i>';
-	s += '</div>'; 
+	s += '</div>';
 	jQuery('.uap-register-the-values').append(s);
 }
 
@@ -133,11 +133,11 @@ function uap_register_preview(){
                },
         success: function (response) {
         	jQuery('#register_preview').fadeOut(200, function(){
-        		jQuery(this).html(response); 
+        		jQuery(this).html(response);
         		jQuery(this).fadeIn(400);
-        	});       	 	
+        	});
         }
-   });	
+   });
 }
 
 function uap_login_preview(){
@@ -155,11 +155,11 @@ function uap_login_preview(){
                },
         success: function (d) {
         	jQuery('#uap-preview-login').fadeOut(200, function(){
-        		jQuery(this).html(d); 
+        		jQuery(this).html(d);
         		jQuery(this).fadeIn(400);
-        	});       	 	
+        	});
         }
-   });	
+   });
 }
 
 function uap_add_new_achieve_rule(){
@@ -167,17 +167,17 @@ function uap_add_new_achieve_rule(){
 	var t = jQuery('#achieve_type').val();
 	var v = jQuery('#achieve_value').val();
 	var print = '';
-	
+
 	if (t==-1){return;}
-	
+
 	if (jQuery('#achieve_relation_div').css('display')=='none'){
 		jQuery('#achieve_relation_div').css('display', 'block');
 	}
-	
+
 	var str = jQuery('#achieve_type_value').val();
 	if (str==''){
 		var n = 1;
-		var obj = {i: n, type_1: t, value_1: v};	
+		var obj = {i: n, type_1: t, value_1: v};
 	} else {
 		var obj = JSON.parse(str);
 		obj.i++;
@@ -189,11 +189,11 @@ function uap_add_new_achieve_rule(){
 	}
 	var str = JSON.stringify(obj);
 	jQuery('#achieve_type_value').val(str);
-	
+
 	var achieve_type = jQuery("#achieve_type option[value='"+t+"']").text();
 	print += '<div class="achieve-item" id="achieve_item_' + n + '"><div style="font-weight:bold;font-size:14px;">'+'' + achieve_type + '</div><div>' + 'From: ' + v + '</div></div>';
 	jQuery("#achieve_type option[value='"+t+"']").remove();
-	
+
 	var c = 0;
 	jQuery("#achieve_type option").each(function(){
 		c++;
@@ -203,17 +203,17 @@ function uap_add_new_achieve_rule(){
 		jQuery('#achieve_type').attr('disabled', 'disabled');
 		jQuery('#add_new_achieve').css('display', 'none');
 	}
-	
+
 	var initial = jQuery('#achieve_rules_view').html();
 	jQuery('#achieve_rules_view').html(initial + print);
 
 	jQuery('#achieve_type').val('');
 	jQuery('#achieve_value').val('');
-	
+
 	if (jQuery('#achieve_reset').css('display')=='none'){
 		jQuery('#achieve_reset').css('display', 'inline-block');
 	}
-	
+
 }
 
 function uap_achieve_reset(){
@@ -247,7 +247,7 @@ function uap_autocomplete_write_tag(value_id, hiddenId, viewDivId, prevDivPrefix
 	/*
 	 * viewDivId - parent
 	 * prevDivPrefix - prefix of tag
-	 * hiddenId - where values are 
+	 * hiddenId - where values are
 	 */
 	id = prevDivPrefix + value_id;
 	jQuery(viewDivId).append('<div id="'+id+'" class="uap-tag-item">'+label+'<div class="uap-remove-tag" onclick="uap_remove_tag(\''+value_id+'\', \'#'+id+'\', \''+hiddenId+'\');" title="Removing tag">x</div></div>');
@@ -256,11 +256,11 @@ function uap_autocomplete_write_tag(value_id, hiddenId, viewDivId, prevDivPrefix
 function uap_remove_tag(removeVal, removeDiv, hiddenId){
 	jQuery(removeDiv).fadeOut(200, function(){
 		jQuery(this).remove();
-	});	
-    
+	});
+
     hidden_i = jQuery(hiddenId).val();
     show_arr = hidden_i.split(',');
-    
+
     show_arr = remove_array_element(removeVal, show_arr);
     str = show_arr.join(',');
 	jQuery(hiddenId).val(str);
@@ -294,10 +294,10 @@ function uap_rank_change_order_preview(r, v){
                    current_label: jQuery('#rank_label').val(),
                },
         success: function (d) {
-        	jQuery('.uap-rank-graphic').html(d); 
+        	jQuery('.uap-rank-graphic').html(d);
         	jQuery('.uap-rank-graphic').css('visibility', 'visible');
         }
-   });	
+   });
 }
 
 function uap_make_inputh_string(divCheck, showValue, hidden_input_id){
@@ -360,27 +360,27 @@ function uap_return_notification(){
                 type: jQuery('#notf_type').val(),
             },
         success: function (r) {
-        	var o = jQuery.parseJSON(r);	
+        	var o = jQuery.parseJSON(r);
         	jQuery('#notf_subject').val(o.subject);
         	jQuery('#notf_message').val(o.content);
         	jQuery("#notf_message_ifr" ).contents().find( '#tinymce' ).html(o.content);
         }
-	});	
+	});
 }
 
 function uap_matrix_type_condition(v){
 	if (v=='unilevel'){
 		jQuery('#children_limit_div').css('display', 'none');
-		jQuery('#uap_mlm_child_limit').removeAttr('max');	
-	} 
+		jQuery('#uap_mlm_child_limit').removeAttr('max');
+	}
 	else {
 		jQuery('#children_limit_div').css('display', 'table');
 		if (v=='binary'){
 			jQuery('#uap_mlm_child_limit').attr('max', 2);
 			jQuery('#uap_mlm_child_limit').val(2);
 		} else {
-			jQuery('#uap_mlm_child_limit').removeAttr('max');		
-		}		
+			jQuery('#uap_mlm_child_limit').removeAttr('max');
+		}
 	}
 }
 
@@ -393,7 +393,7 @@ function uap_mlm_update_tbl(v){
 			jQuery('#uap_mlm_level_' + i).remove();
 		}
 	} else {
-		var str_model = jQuery('#uap_mlm_model tbody').html();		
+		var str_model = jQuery('#uap_mlm_model tbody').html();
 		var default_type = jQuery('#uap_mlm_default_amount_type').val();
 		var default_value = jQuery('#uap_mlm_default_amount_value').val();
 		for (var i=last+1; i<=v; i++){
@@ -430,7 +430,7 @@ function uap_payment_form_payment_status(v){
 	if (v=='bank_transfer'){
 		jQuery('#payment_status_div').css('display', 'block');
 	} else {
-		jQuery('#payment_status_div').css('display', 'none');		
+		jQuery('#payment_status_div').css('display', 'none');
 	}
 }
 
@@ -476,7 +476,7 @@ function uap_make_user_affiliate(i){
         	if (data==2){
         		alert('Admin cannot become Affiliate!');
         	} else {
-   	        	location.reload();	
+   	        	location.reload();
         	}
         }
    	});
@@ -507,9 +507,9 @@ function uap_remove_currency(c){
         success: function (r) {
         	if (r){
         		jQuery("#uap_div_"+c).fadeOut(300);
-        	} 	 	
+        	}
         }
-   });	
+   });
 }
 
 function uap_remove_slug(i){
@@ -521,9 +521,9 @@ function uap_remove_slug(i){
                    uid: i
         },
         success: function (r) {
-        	window.location = window.custom_aff_base_url;	 	
+        	window.location = window.custom_aff_base_url;
         }
-   });	
+   });
 }
 
 function uap_change_color_scheme(id, value, where ){
@@ -547,9 +547,9 @@ function uap_preview_u_list(){
 		meta.ranks_in = jQuery('#ranks_in').val();
 	}
 	meta.user_fields = jQuery('#user_fields').val();
-	
+
 	//console.log(meta.user_fields);
-	
+
 	if (jQuery('#include_fields_label').is(':checked')){
 		meta.include_fields_label = 1;
 	}
@@ -574,10 +574,10 @@ function uap_preview_u_list(){
 		for (var i=0; i<slider_special_metas.length; i++){
 			if (jQuery('#'+slider_special_metas[i]).is(":checked")){
 				meta[slider_special_metas[i]] = 1;
-			}			
+			}
 		}
 	}
-	
+
 	///SHORTCODE
 	var str = "[uap-listing-affiliates ";
 	for (var key in meta) {
@@ -586,7 +586,7 @@ function uap_preview_u_list(){
 	str += ']';
     jQuery('.the-shortcode').html(str);
     jQuery(".php-code").html('&lt;?php echo do_shortcode("'+str+'");?&gt;');
-    
+
     //AJAX CALL
    	jQuery.ajax({
         type : 'post',
@@ -598,7 +598,7 @@ function uap_preview_u_list(){
         success: function (r) {
         	jQuery('#preview').html(r);
         }
-   	});	
+   	});
 }
 
 function uap_checkbox_div_relation(c, t){
@@ -616,16 +616,16 @@ function uap_checkbox_div_relation(c, t){
 function uap_writeTagValue_list_users(id, hiddenId, viewDivId, prevDivPrefix){
     if(id.value==-1) return;
     hidden_i = jQuery(hiddenId).val();
-    
+
     if(hidden_i!='') show_arr = hidden_i.split(',');
     else show_arr = new Array();
-    
+
     if(show_arr.indexOf(id.value)==-1){
         show_arr.push(id.value);
-	    
+
 	    str = show_arr.join(',');
 	    jQuery(hiddenId).val(str);
-	
+
 		label = jQuery(id).find("option:selected").text();
 		jQuery(viewDivId).append('<div id="'+prevDivPrefix+id.value+'" class="uap-tag-item">'+label+'<div class="uap-remove-tag" onclick="uapremoveTag(\''+id.value+'\', \'#'+prevDivPrefix+'\', \''+hiddenId+'\');uap_preview_u_list();" title="Removing tag">x</div></div>');
     }
@@ -636,21 +636,21 @@ function uap_writeTagValue_list_users(id, hiddenId, viewDivId, prevDivPrefix){
 function uap_show_hide_drip(){
 	if (jQuery('#ihc_mb_type').val()=='show'){
 		jQuery('#ihc_drip_content_empty_meta_box').css('display', 'none');
-		jQuery('#ihc_drip_content_meta_box').css('display', 'block');		
+		jQuery('#ihc_drip_content_meta_box').css('display', 'block');
 	} else {
 		jQuery('#ihc_drip_content_empty_meta_box').css('display', 'block');
-		jQuery('#ihc_drip_content_meta_box').css('display', 'none');		
+		jQuery('#ihc_drip_content_meta_box').css('display', 'none');
 	}
 }
 
 function uapremoveTag(removeVal, prevDivPrefix, hiddenId){
 	jQuery(prevDivPrefix+removeVal).fadeOut(200, function(){
 		jQuery(this).remove();
-	});	
-    
+	});
+
     hidden_i = jQuery(hiddenId).val();
     show_arr = hidden_i.split(',');
-    
+
     show_arr = removeArrayElement(removeVal, show_arr);
     str = show_arr.join(',');
 	jQuery(hiddenId).val(str);
@@ -675,22 +675,22 @@ function uap_delete_file_via_ajax(id, u_id, parent, name, hidden_id){
                    user_id: u_id,
                    field_name: name,
                },
-        success: function (data) {   
+        success: function (data) {
         	jQuery(hidden_id).val('');
-        	jQuery(parent + ' .ajax-file-upload-filename').remove();        	
+        	jQuery(parent + ' .ajax-file-upload-filename').remove();
         	jQuery(parent + ' .uap-delete-attachment-bttn').remove();
         	if (jQuery(parent + ' .uap-member-photo').length){
         		jQuery(parent + ' .uap-member-photo').remove();
         		if (name=='uap_avatar'){
         			jQuery(parent).prepend("<div class='uap-no-avatar uap-member-photo'></div>");
         			jQuery(parent + " .uap-file-upload").css("display", 'block');
-        		}        		
+        		}
         	}
-        	
+
         	if (jQuery(parent + " .uap-file-name-uploaded").length){
         		jQuery(parent + " .uap-file-name-uploaded").remove();
         	}
-        	
+
         	if (jQuery(parent + ' .ajax-file-upload-progress').length){
         		jQuery(parent + ' .ajax-file-upload-progress').remove();
         	}
@@ -715,13 +715,13 @@ function uap_approve_email(id, new_label){
         		the_span_style = 'background-color: #f1f1f1;color: #666;padding: 3px 0px;font-size: 10px;font-weight: bold;display: inline-block; min-width: 70px; border: 1px solid #ddd;border-radius: 3px;text-align: center;';
         		jQuery(this).html('<span style="'+the_span_style+'">'+new_label+'</span>');
         		jQuery(this).fadeIn(200);
-        		
+
         		jQuery('#approve_email_'+id).fadeOut(200, function(){
         			jQuery(this).html('');
         		});
-        	});       	 	
+        	});
         }
-   });		
+   });
 }
 
 function uap_check_email_server(){
@@ -734,13 +734,13 @@ function uap_check_email_server(){
 	        success: function (r){
 	        	alert(window.uap_messages.email_server_check);
 	        }
-	});			
+	});
 }
 
 function uap_check_login_field(t, e){
 	var n = jQuery('#notice_' + t);
 	n.fadeOut(500, function(){
-		n.remove();	
+		n.remove();
 	});
 	var target = jQuery('#uap_login_form [name='+t+']').parent();
 	var v = jQuery('#uap_login_form [name='+t+']').val();
@@ -755,7 +755,7 @@ function uap_check_field_limit(limit, d){
 		jQuery(d).val('');
 		alert(limit + ' is the maximum number of characters for this field!');
 	}
-} 
+}
 
 function uap_generate_payments_csv(){
    	jQuery.ajax({
@@ -772,17 +772,17 @@ function uap_generate_payments_csv(){
         	if (response){
         		jQuery('.uap-hidden-download-link a').attr('href', response);
         		jQuery('.uap-hidden-download-link').fadeIn(200);
-        		window.open(response, '_blank');	
-        	} 	 	
+        		window.open(response, '_blank');
+        	}
         }
-   });	
-	
+   });
+
 }
 
 
 function uap_do_redirect(base_url, param, value_input){
-	var the_url = base_url + '&' + param + '=' + jQuery(value_input).val(); 
-	window.location = the_url;	
+	var the_url = base_url + '&' + param + '=' + jQuery(value_input).val();
+	window.location = the_url;
 }
 
 
@@ -795,7 +795,7 @@ function indeed_shiny_select(params){
 	 */
 	this.selector = params.selector; ///got # in front of it
 	this.popup_id = 'indeed_select_' + params.option_name_code;
-	this.popup_visible = false;	
+	this.popup_visible = false;
 	this.option_name_code = params.option_name_code;
 	this.option_name_icon = params.option_name_icon;
 	this.item_selector = params.item_selector; /// got . in front of it
@@ -803,7 +803,7 @@ function indeed_shiny_select(params){
 	this.second_selector = params.second_selector;
 	this.default_code = params.default_code;
 	var current_object = this;
-	
+
 	jQuery(current_object.selector).after('<input type="hidden" name="' + current_object.option_name_code + '" value="' + params.default_code + '" />');
 	jQuery(current_object.selector).after('<input type="hidden" name="' + current_object.option_name_icon + '" value="' + params.default_icon + '" />');
 	jQuery(current_object.selector).after('<div class="indeed_select_popup" style="display: none;" id="' + current_object.popup_id + '"></div>');
@@ -820,13 +820,13 @@ function indeed_shiny_select(params){
 		jQuery('[name=' + current_object.option_name_code + ']').val(code);
 		jQuery('[name=' + current_object.option_name_icon + ']').val(i_class);
 		jQuery(current_object.selector).html(the_html);
-		remove_popup();				
+		remove_popup();
 	}
-		
+
 	function load_data_via_ajax(){
 		var img = "<img src='" + decodeURI(window.uap_url) + '/wp-content/plugins/indeed-affiliate-pro/assets/images/loading.gif' + "' style='width: 200px'/>";
 		jQuery('#'+current_object.popup_id).html(img);
-		jQuery('#'+current_object.popup_id).css('display', 'block'); 
+		jQuery('#'+current_object.popup_id).css('display', 'block');
 		jQuery.ajax({
 		    type : 'post',
 		    dataType: "text",
@@ -838,7 +838,7 @@ function indeed_shiny_select(params){
 		       	jQuery('#'+current_object.popup_id).html(r);
 		       	jQuery(current_object.item_selector).on('click', get_data_and_close);
 			}
-		});				
+		});
 	}
 
 	jQuery(current_object.selector).on('click', function(){
@@ -849,7 +849,7 @@ function indeed_shiny_select(params){
 			remove_popup();
 		}
 	});
-	
+
 	jQuery(current_object.second_selector).on('click', function(){
 		//// arrow
 		if (!current_object.popup_visible){
@@ -859,13 +859,13 @@ function indeed_shiny_select(params){
 			remove_popup();
 		}
 	});
-	
+
 	function remove_popup(){
 		jQuery('#'+current_object.popup_id).empty();
 		jQuery('#'+current_object.popup_id).css('display', 'none');
 		current_object.popup_visible = false;
 	}
-	
+
 }
 
 function uap_make_export_file(){
@@ -887,7 +887,13 @@ function uap_make_export_file(){
 	        	jQuery('.uap-hidden-download-link a').attr('href', response);
 	        	jQuery('.uap-hidden-download-link').fadeIn(200);
 				jQuery('#ihc_loading_gif .spinner').css('visibility', 'hidden');
-	        } 	 	
+	        }
 	    }
-	});	
+	});
+}
+
+function uap_check_base_referral_link(v, u){
+		if (v.indexOf(u)==-1){
+				alert(jQuery('#base_referral_link_alert').html());
+		}
 }
