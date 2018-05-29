@@ -213,9 +213,15 @@ class Referral_Main{
 			return;
 		}
 		if ($child_affiliate_id && $child_referral_id){
-			global $indeed_db;
-			$parent_id = $indeed_db->mlm_get_parent($child_affiliate_id);
-			$description = 'From MLM';
+      global $indeed_db;
+      if ($count === 1) {
+        // @CUSTOM: condition for stick first render as `ref=theguy` people
+        $parent_id = $child_affiliate_id;
+      } else {
+        $parent_id = $indeed_db->mlm_get_parent($child_affiliate_id);
+      }
+      $description = 'From MLM';
+      if ($parent_id === 0) $parent_id = 1;
 			if (!empty($first_child_username)){
 				$description = 'From ' . $first_child_username;
 			}
