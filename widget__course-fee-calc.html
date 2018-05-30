@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<html>
 <head>
   <title>course fee valuable ?</title>
   <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
@@ -7,18 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-  <!-- Google Tag Manager (noscript) -->
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WQJTNVH"
-  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-  <!-- End Google Tag Manager (noscript) -->
   <div id="app">
      <v-app>
-      <!-- <monthlyInterest></monthlyInterest> -->
        <main>
          <v-container>
            <v-layout row>
             <v-flex xs12 lg6 offset-lg3>
-              <!-- ***3 -->
               <v-card class="e4">
                 <v-toolbar class="cyan" dark>
                   <v-toolbar-title><span class="hidden-xs-only">is </span>course fee $14,888 valuable?</v-toolbar-title>
@@ -49,53 +42,50 @@
                   </v-container>
                 </v-card-text>
               </v-card>
-
-
             </v-flex>
           </v-layout>
          </v-container>
-
        </main>
      </v-app>
   </div>
   <script src="https://unpkg.com/vue/dist/vue.js"></script>
   <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
   <script>
-
-   new Vue({
-    el: '#app',
-    data: {
-      pocketMoney: 0, // default: $14,888
-      courseFee: 14888, // default: $14,888
-      investmentBase: 20000, // default: $20,000
-      monthlyInterest: 5, // default: 5%
-      resultMonthly: '? month', // calc: 20000 * (1+5%) x n - 20000 = $14,888
-    },
-    computed: {
-      resultMonth: function () {
-        // return courseFee /
-        // calc: 20000 * (1+5%) x n - 20000 = $14,888
-        let round = 0
-        let year = 0
-        this.pocketMoney = this.investmentBase
-        while((this.pocketMoney - this.investmentBase) < this.courseFee) {
-          // compound interest
-          this.pocketMoney += this.pocketMoney * (this.monthlyInterest / 100)
-          round++
-        }
-        if (round === 1) {
-          return 'less than 1 month'
-        }
-        if (round === 12) {
-          return '1 year'
-        }
-        if (round > 12) {
-          return `${round} year & ${round % 12} month`
-        }
-        return `${round} month`
+    new Vue({
+      el: '#app',
+      data: {
+        pocketMoney: 0, // unit: $0
+        courseFee: 14888, // unit: $14,888
+        investmentBase: 20000, // unit: $20,000
+        monthlyInterest: 5, // unit: 5%
+        resultMonthly: '? month', // calc: 20000 * (1+5%) x n - 20000 = $14,888
       },
-    }
-   })
+      computed: {
+        resultMonth: function () {
+          // return courseFee /
+          // calc: 20000 * (1+5%) x n - 20000 = $14,888
+          // = 14888 + 20000/20000 / 1.05
+          let round = 0
+          let year = 0
+          this.pocketMoney = this.investmentBase
+          while((this.pocketMoney - this.investmentBase) < this.courseFee) {
+            // compound interest
+            this.pocketMoney += this.pocketMoney * (this.monthlyInterest / 100)
+            round++
+          }
+          if (round === 1) {
+            return 'less than 1 month'
+          }
+          if (round === 12) {
+            return '1 year'
+          }
+          if (round > 12) {
+            return `${round} year & ${round % 12} month`
+          }
+          return `${round} month`
+        },
+      }
+    })
   </script>
   <style>
     #app {
