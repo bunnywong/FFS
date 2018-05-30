@@ -21,37 +21,29 @@
               <!-- ***3 -->
               <v-card class="e4">
                 <v-toolbar class="cyan" dark>
-                  <v-toolbar-title>is course fee $14,888 valuable ?</v-toolbar-title>
+                  <v-toolbar-title><span class="hidden-xs-only">is </span>course fee $14,888 valuable?</v-toolbar-title>
                   <v-spacer></v-spacer>
                 </v-toolbar>
                 <v-card-text>
                   <v-container fluid grid-list-md>
-
                     <v-layout row wrap>
                       <!-- row 1 -->
-                      <!-- <v-flex xs9>
-                        <v-slider label="course fee $" v-bind:max="15000" v-model="courseFee" disabled></v-slider>
-                      </v-flex>
-                      <v-flex xs3>
-                        <v-text-field v-model="courseFee" type="number"></v-text-field>
-                      </v-flex> -->
-                      <!-- row 2 -->
-                      <v-flex xs9>
+                      <v-flex sm9 xs12>
                         <v-slider label="investment $" v-bind:min="8" v-bind:max="100000" v-model="investmentBase"></v-slider>
                       </v-flex>
-                      <v-flex xs3>
+                      <v-flex sm3 xs12>
                         <v-text-field v-model="investmentBase" type="number"></v-text-field>
                       </v-flex>
-                      <!-- row 3 -->
-                      <v-flex xs9>
-                        <v-slider label="forecast monthly gain %" v-bind:min="1" v-bind:max="50" v-model="monthlyInterest">
+                      <!-- row 2 -->
+                      <v-flex sm9 xs12>
+                        <v-slider label="monthly gain %" v-bind:min="1" v-bind:max="50" v-model="monthlyInterest">
                       </v-flex>
-                      <v-flex xs3>
+                      <v-flex sm3 xs12>
                         <v-text-field v-model="monthlyInterest" type="number"></v-text-field>
                       </v-flex>
                       <!-- Result -->
-                      <v-flex xs12>
-                        <h2>course fee sponsored by <span style="color: orange">{{resultMonth}}</span> investment</h5>
+                      <v-flex sm12 xs12 class="result">
+                        <h2>course fee sponsored by <br class="hidden-sm-and-up"><span style="color: orange">{{resultMonth}}</span> <br class="hidden-sm-and-up">investment</h5>
                       </v-flex>
                     </v-layout>
                   </v-container>
@@ -109,10 +101,16 @@
     #app {
       overflow: hidden;
     }
+    input[type="number"] {
+      text-align: right;
+    }
     @media only screen and (max-width: 768px) {
       .slider__thumb.primary {
         width: 30px;
         height: 30px;
+      }
+      .result {
+        text-align: center;
       }
     }
   </style>
