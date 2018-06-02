@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+  <head>
+    <title>offset course fee ?</title>
+    <link href='//fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+    <link href="//unpkg.com/vuetify/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div id="app" class="calc__widget">
+       <v-app>
+         <main>
+           <v-container>
+             <v-layout row>
+              <v-flex xs12 lg6 offset-lg3>
+                <v-card class="e4">
+                  <v-toolbar class="cyan" dark>
+                    <v-toolbar-title>offset course fee $14,888 ?</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                  </v-toolbar>
+                  <v-card-text>
+                    <v-container fluid grid-list-md>
+                      <v-layout row wrap>
+                        <!-- row 1 -->
+                        <v-flex sm9 xs12>
+                          <v-slider label="investment $" v-bind:min="1" v-bind:max="100000" v-model="investmentBase"></v-slider>
+                        </v-flex>
+                        <v-flex sm3 xs12>
+                          <v-text-field v-model="investmentBase" type="number"></v-text-field>
+                        </v-flex>
+                        <!-- row 2 -->
+                        <v-flex sm9 xs12>
+                          <v-slider label="monthly gain %" v-bind:min="1" v-bind:max="50" v-model="monthlyInterest">
+                        </v-flex>
+                        <v-flex sm3 xs12>
+                          <v-text-field v-model="monthlyInterest" type="number"></v-text-field>
+                        </v-flex>
+                        <!-- Result -->
+                        <v-flex sm12 xs12 class="result">
+                          <div class="text-result" v-html="resultText"></div>
+                        </v-flex>
+                      </v-layout>
+                    </v-container>
+                  </v-card-text>
+                </v-card>
+              </v-flex>
+            </v-layout>
+           </v-container>
+         </main>
+       </v-app>
+    </div>
+    <script src="//unpkg.com/vue/dist/vue.js"></script>
+    <script src="//unpkg.com/vuetify/dist/vuetify.js"></script>
+    <script>
+      new Vue({
+        el: '#app',
+        data: {
+          courseFee: 14888, // = $14,888
+          investmentBase: 20000, // = $20,000^12
+          monthlyInterest: 5, // = 5%
+        },
+        computed: {
+          resultMonth: function () {
+            let resultMonth = Math.round(this.courseFee / (this.investmentBase * this.monthlyInterestPercent))
+            if (resultMonth === 1) {
+              return 'less than 1 month'
+            }
+            if (resultMonth === 12) {
+              return '1 year'
+            }
+            if (resultMonth > 12) {
+              return `${ Math.floor(resultMonth / 12) } year & ${resultMonth % 12} month`
+            }
+            return `${resultMonth} month`
+          },
+          monthlyInterestPercent: function () {
+            return this.monthlyInterest / 100
+          },
+          annualProfit: function () {
+            return this.investmentBase * this.monthlyInterestPercent * 12
+          },
+          annualInterestRate: function () {
+            return this.monthlyInterest * 12
+          },
+          resultText: function () {
+            let text = ''
+            return `offset by <br class="hidden-sm-and-up">
+                <span>${this.resultMonth}</span> investment<br class="hidden-sm-and-up">
+                (annual interest <span> ${this.annualInterestRate}%</span>)`
+          }
+        }
+      })
+    </script>
+    <style scopoed>
+      #app {
+        overflow: hidden;
+      }
+      input[type="number"] {
+        text-align: right;
+      }
+      .text-result {
+        font-size: 30px;
+      }
+      .text-result span {
+        color: orange;
+      }
+      @media only screen and (max-width: 768px) {
+        .slider__thumb.primary {
+          width: 30px;
+          height: 30px;
+        }
+        .result {
+          text-align: center;
+        }
+      }
+    </style>
+  </body>
+</html>
