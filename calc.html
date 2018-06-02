@@ -38,6 +38,15 @@
                         <v-flex sm12 xs12 class="result">
                           <div class="text-result" v-html="resultText"></div>
                         </v-flex>
+                        <v-flex xs12>
+                          <div>
+                            <span>desktop shortcut</span>
+                            <ul>
+                              <li>keyboard LEFT & RIGHT adjust investment</li>
+                              <li>UP & DONW adjust monthly gain</li>
+                            </ul>
+                          </div>
+                        </v-flex>
                       </v-layout>
                     </v-container>
                   </v-card-text>
@@ -87,6 +96,43 @@
                 <span>${this.resultMonth}</span> investment<br class="hidden-sm-and-up">
                 (annual interest <span> ${this.annualInterestRate}%</span>)`
           }
+        },
+        methods: {
+          keyboardControl: function (event) {
+            let self = this
+            document.onkeydown = function (e) {
+              const jumpUnit = 5000
+              if (e && e.keyCode) {
+                switch (e.keyCode) {
+                  case 38: // ⬆️ monthly interest +1
+                    self.monthlyInterest++
+                    break
+                  case 40: // ⬇️ monthly interest -1
+                    if (self.monthlyInterest > 1) self.monthlyInterest--
+                    break
+                  case 39: // ➡️ investment +1
+                    if (self.investmentBase === 1) {
+                      // handle: 1 to jump unit
+                      self.investmentBase = jumpUnit
+                    } else {
+                      self.investmentBase += jumpUnit
+                    }
+                    break
+                  case 37: // ⬅️ investment -1
+                    if (self.investmentBase > jumpUnit) {
+                      self.investmentBase -= jumpUnit
+                    } else {
+                      // result min as 1
+                      self.investmentBase = 1
+                    }
+                    break
+                }
+              }
+            }
+          }
+        },
+        mounted () {
+          this.keyboardControl()
         }
       })
     </script>
