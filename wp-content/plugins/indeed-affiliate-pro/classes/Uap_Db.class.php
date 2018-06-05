@@ -1048,9 +1048,11 @@ if (!class_exists('Uap_Db')){
 					$q .= " AND affiliate_id IN ($ids)";
 				}
 			}
-			$q .= " AND	status='2'
-					GROUP BY affiliate_id
-			;";
+      // @CUSTOM: exclude non mlm(`woo` in source)
+      $q .= " AND status='2' AND source='mlm'
+          GROUP BY affiliate_id
+      ;";
+      // $q .= " AND  status='2'
 			$data = $wpdb->get_results($q);
 
 			if (!empty($data)){
