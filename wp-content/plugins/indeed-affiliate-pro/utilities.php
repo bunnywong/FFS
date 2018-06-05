@@ -1254,6 +1254,8 @@ function uap_service_type_code_to_title($type=''){
 				return 'Ultimate Membership Pro';
 				break;
 			case 'woo':
+        // @CUSTOM: string
+        return 'Direct Invite Commission';
 				$label = get_option('uap_custom_source_name_woo');
 				if ($label){
 						return $label;
@@ -1275,6 +1277,8 @@ function uap_service_type_code_to_title($type=''){
 				return 'Bonus';
 				break;
 			case 'mlm':
+        // @CUSTOM: string
+        return 'Team Commission';
 				$label = get_option('uap_custom_source_name_mlm');
 				if ($label){
 						return $label;
