@@ -123,9 +123,10 @@ $tabs = array(
 											),
 						),
 					),
-					'marketing' => array(
-						'type' => 'tab', 
-						'label' => __('Marketing', 'uap'), 
+          // @CUSTOM: hide
+					/*'marketing' => array(
+						'type' => 'tab',
+						'label' => __('Marketing', 'uap'),
 						'slug' => 'marketing',
 						'print_link' => FALSE,
 						'icon_code' => '',
@@ -172,6 +173,7 @@ $tabs = array(
 											),											  	
 						)
 					),
+          */
 					'referrals' => array(
 						'type' => 'tab', 
 						'label' => __('Statements', 'uap'), 
@@ -208,22 +210,23 @@ $tabs = array(
 												'icon_code' => '',
 												'parent' => 'reports',
 											),
-					  					  	'visits' => array(
-												'type' => 'subtab', 
-												'label' => __('Traffic Log', 'uap'), 
-												'slug' => 'visits',
-												'print_link' => TRUE,
-												'icon_code' => '',
-												'parent' => 'reports',
-											),
-										  	'campaign_reports' => array(
-												'type' => 'subtab', 
-												'label' => __('Campaign Reports', 'uap'), 
-												'slug' => 'campaign_reports',
-												'print_link' => TRUE,
-												'icon_code' => '',
-												'parent' => 'reports',
-											),
+                      // @CUSTOM: hide
+					  				  // 	'visits' => array(
+											// 	'type' => 'subtab',
+											// 	'label' => __('Traffic Log', 'uap'),
+											// 	'slug' => 'visits',
+											// 	'print_link' => TRUE,
+											// 	'icon_code' => '',
+											// 	'parent' => 'reports',
+											// ),
+										  //  'campaign_reports' => array(
+											// 	'type' => 'subtab',
+											// 	'label' => __('Campaign Reports', 'uap'),
+											// 	'slug' => 'campaign_reports',
+											// 	'print_link' => TRUE,
+											// 	'icon_code' => '',
+											// 	'parent' => 'reports',
+											// ),
 										  	'referrals_history' => array(
 												'type' => 'subtab', 
 												'label' => __('Referrals History', 'uap'), 
@@ -249,13 +252,14 @@ $tabs = array(
 						'print_link' => TRUE,
 						'icon_code' => '',
 					),
-					'help' => array(
-						'type' => 'tab', 
-						'label' => __('Help', 'uap'), 
-						'slug' => 'help',
-						'print_link' => TRUE,
-						'icon_code' => '',
-					),
+          // @CUSTOM: hide
+					// 'help' => array(
+					// 	'type' => 'tab',
+					// 	'label' => __('Help', 'uap'),
+					// 	'slug' => 'help',
+					// 	'print_link' => TRUE,
+					// 	'icon_code' => '',
+					// ),
 					'logout' => array(
 						'type' => 'tab', 
 						'label' => __('LogOut', 'uap'),
