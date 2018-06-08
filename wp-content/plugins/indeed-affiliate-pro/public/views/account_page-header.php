@@ -352,10 +352,12 @@ foreach ($tabs as $first_slug => $array){
 									<ul class="uap-public-ap-menu-subtabs" style="<?php echo $extra_style;?>" id="<?php echo 'uap_public_ap_' . $slug;?>">
 										<?php foreach ($array['children'] as $second_slug => $second_array): ?>
 											<?php $extra_class = ($data['selected_tab']==$second_slug) ? 'uap-ap-menu-item-selected' : '';?>
-											<li class="uap-ap-menu-item <?php echo $extra_class;?>"><a href="<?php echo $data['urls'][$second_slug];?>"><i class="<?php echo 'fa-uap fa-' . $second_slug . '-account-uap';?>"></i><?php 
-			        						  	echo $second_array['label'];	
-											?></a></li>
-										<?php endforeach;?>	
+											<li class="uap-ap-menu-item <?php echo $extra_class;?>"><a href="<?php echo $data['urls'][$second_slug];?>"><i class="<?php echo 'fa-uap fa-' . $second_slug . '-account-uap';?>"></i>
+                        <?php echo $second_array['label'] === 'MLM' ? 'Team' : $second_array['label']; // @CUSTOM: string ?>
+                        <?php // echo $second_array['label']?>
+                      </a>
+											</li>
+										<?php endforeach;?>
 									</ul>
 								</li>
 						<?php } else { ?>
